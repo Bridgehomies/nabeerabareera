@@ -1,0 +1,956 @@
+/* Import Google Fonts for the unique fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400&family=Futura:wght@400&family=Orbitron:wght@400&family=Anton:wght@400&family=Space+Mono:wght@400;700&family=Bebas+Neue:wght@400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Gondgir Regular';
+  src: url('/Gondgir Regular.woff2') format('woff2'),
+       url('/Gondgir Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* New color scheme */
+    --background: 210 50% 98%;
+    --foreground: 210 50% 10%;
+
+    --primary: 350 80% 55%;
+    --primary-hover: 350 80% 65%;
+    --primary-dark: 350 80% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 80% 60%;
+    --secondary-hover: 200 80% 70%;
+    --secondary-dark: 200 80% 50%;
+    --secondary-foreground: 0 0% 0%;
+
+    --accent: 130 60% 50%;
+    --accent-hover: 130 60% 60%;
+    --accent-dark: 130 60% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 50% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 50% 10%;
+
+    --muted: 210 20% 90%;
+    --muted-foreground: 210 20% 40%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 50% 10%;
+    --input: 210 50% 10%;
+    --ring: 210 50% 10%;
+    --radius: 0rem;
+  }
+
+  .dark {
+    --background: 210 50% 10%;
+    --foreground: 210 50% 98%;
+
+    --primary: 350 80% 55%;
+    --primary-hover: 350 80% 65%;
+    --primary-dark: 350 80% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 80% 60%;
+    --secondary-hover: 200 80% 70%;
+    --secondary-dark: 200 80% 50%;
+    --secondary-foreground: 0 0% 0%;
+
+    --accent: 130 60% 50%;
+    --accent-hover: 130 60% 60%;
+    --accent-dark: 130 60% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --card: 210 50% 15%;
+    --card-foreground: 210 50% 98%;
+
+    --popover: 210 50% 15%;
+    --popover-foreground: 210 50% 98%;
+
+    --muted: 210 20% 30%;
+    --muted-foreground: 210 20% 70%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 50% 98%;
+    --input: 210 50% 98%;
+    --ring: 210 50% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: "Space Mono", monospace;
+    cursor: default;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  h1 {
+    font-family: "Cinzel", serif; /* For NABEERA BAERA */
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  h2, h3 {
+    font-family: "Futura", sans-serif; /* For COLLECTIONS and PRODUCTS */
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  h4 {
+    font-family: "Orbitron", sans-serif; /* For NEW SEASON ARRIVALS */
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  h5, h6 {
+    font-family: "Anton", sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+}
+
+
+/* Brutalist grid lines */
+.brutalist-grid {
+  background-image: linear-gradient(to right, hsl(var(--primary) / 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--primary) / 0.3) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Brutalist container */
+.brutalist-container {
+  border: 4px solid hsl(var(--primary));
+  padding: 20px;
+  margin: 20px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.brutalist-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Brutalist button */
+.brutalist-btn {
+  background: hsl(var(--primary));
+  color: white;
+  border: 4px solid hsl(var(--primary));
+  padding: 10px 20px;
+  font-family: "Space Mono", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  height: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+.brutalist-btn:hover {
+  background: hsl(var(--primary-hover));
+  transform: scale(1.05) rotate(-1deg);
+}
+
+.brutalist-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.brutalist-btn:hover::after {
+  transform: translateX(100%);
+}
+
+.brutalist-btn-outline {
+  background: white;
+  color: hsl(var(--primary));
+  border: 4px solid hsl(var(--primary));
+}
+
+.brutalist-btn-outline:hover {
+  background: hsl(var(--primary));
+  color: white;
+}
+
+/* Brutalist card */
+.brutalist-card {
+  border: 4px solid hsl(var(--primary));
+  background: white;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.brutalist-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+.brutalist-card-content {
+  padding: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Brutalist image container */
+.brutalist-image {
+  border: 4px solid hsl(var(--primary));
+  overflow: hidden;
+  position: relative;
+}
+
+.brutalist-image::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Brutalist badge */
+.brutalist-badge {
+  background: hsl(var(--accent));
+  color: white;
+  font-weight: bold;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  font-family: "Space Mono", monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+.brutalist-badge::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.brutalist-badge:hover::before {
+  transform: translateX(100%);
+}
+
+/* Brutalist input */
+.brutalist-input {
+  border: 4px solid hsl(var(--primary));
+  background: white;
+  padding: 10px;
+  font-family: "Space Mono", monospace;
+  height: 50px;
+  transition: all 0.3s;
+}
+
+.brutalist-input:focus {
+  border-color: hsl(var(--accent));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 hsl(var(--accent-dark));
+}
+
+/* Brutalist section */
+.brutalist-section {
+  border-top: 8px solid hsl(var(--primary));
+  border-bottom: 8px solid hsl(var(--primary));
+  margin: 5px 0;
+  padding: 40px 0;
+  position: relative;
+}
+
+/* Brutalist header */
+.brutalist-header {
+  border-bottom: 8px solid hsl(var(--primary));
+  background: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* Brutalist footer */
+.brutalist-footer {
+  border-top: 8px solid hsl(var(--primary));
+  background: hsl(var(--primary-dark));
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.brutalist-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Brutalist nav */
+.brutalist-nav-item {
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 10px;
+  border: 2px solid hsl(var(--primary));
+  margin-right: 10px;
+  font-family: "Space Mono", monospace;
+  transition: all 0.3s;
+}
+
+.brutalist-nav-item:hover {
+  background: hsl(var(--primary));
+  color: white;
+  transform: rotate(-2deg) scale(1.05);
+}
+
+/* Brutalist category */
+.category-section.animate-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* 3D Text */
+.threed-text {
+  text-shadow:
+    -1px -1px 0 hsl(var(--primary)), 2px -1px 0 hsl(var(--primary)), -1px 2px 0 hsl(var(--primary)), 2px 2px 0 hsl(
+      var(--primary)
+    ), 4px 4px 0 hsl(var(--primary));
+  transform: skew(-5deg, 0);
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.threed-text-white {
+  text-shadow: -1px -1px 0 #fff, 2px -1px 0 #fff, -1px 2px 0 #fff, 2px 2px 0 #fff, 4px 4px 0 #fff;
+  transform: skew(-5deg, 0);
+  color: hsl(var(--primary));
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* Card 3D Transform */
+.transform-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.3s;
+}
+
+.transform-card:hover {
+  transform: scale(1.03) rotateY(5deg);
+}
+
+/* Interactive hover effects */
+.hover-glitch:hover {
+  animation: glitch 0.3s linear;
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-5px, 5px);
+  }
+  40% {
+    transform: translate(-5px, -5px);
+  }
+  60% {
+    transform: translate(5px, 5px);
+  }
+  80% {
+    transform: translate(5px, -5px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+/* Interactive cursor */
+@media (pointer: fine) {
+  a,
+  button,
+  input,
+  .interactive {
+    cursor: pointer;
+  }
+}
+
+/* For devices that don't support custom cursors well, revert to default */
+@media (pointer: coarse) {
+  html {
+    cursor: auto;
+  }
+
+  a,
+  button,
+  input,
+  .interactive {
+    cursor: auto;
+  }
+}
+
+/* Draggable carousel */
+.drag-scroll {
+  cursor: grab;
+}
+
+.drag-scroll:active {
+  cursor: grabbing;
+}
+
+/* CSS 3D Cube */
+.css-cube-container {
+  width: 200px;
+  height: 200px;
+  perspective: 1000px;
+  margin: 0 auto;
+}
+
+.css-cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotate 20s infinite linear;
+}
+
+.css-cube-face {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border: 4px solid hsl(var(--primary));
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-family: "Anton", sans-serif;
+}
+
+.css-cube-face-front {
+  transform: translateZ(100px);
+}
+
+.css-cube-face-back {
+  transform: rotateY(180deg) translateZ(100px);
+}
+
+.css-cube-face-right {
+  transform: rotateY(90deg) translateZ(100px);
+}
+
+.css-cube-face-left {
+  transform: rotateY(-90deg) translateZ(100px);
+}
+
+.css-cube-face-top {
+  transform: rotateX(90deg) translateZ(100px);
+}
+
+.css-cube-face-bottom {
+  transform: rotateX(-90deg) translateZ(100px);
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotateX(0) rotateY(0);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(360deg);
+  }
+}
+
+/* Hide scrollbar for drag-scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mega Menu */
+.mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-bottom: 8px solid hsl(var(--primary));
+  z-index: 100;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 30px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+}
+
+.mega-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.mega-menu-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.mega-menu-title {
+  font-family: "Anton", sans-serif;
+  font-size: 24px;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  border-bottom: 4px solid hsl(var(--primary));
+  padding-bottom: 10px;
+}
+
+.mega-menu-link {
+  font-family: "Space Mono", monospace;
+  text-transform: uppercase;
+  padding: 8px 0;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.mega-menu-link:hover {
+  transform: translateX(10px);
+  color: hsl(var(--accent));
+}
+
+/* Uneven spacing */
+.uneven-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-gap: 20px;
+}
+
+.uneven-col-1 {
+  grid-column: span 3;
+}
+
+.uneven-col-2 {
+  grid-column: span 5;
+}
+
+.uneven-col-3 {
+  grid-column: span 4;
+}
+
+.uneven-col-4 {
+  grid-column: span 6;
+}
+
+.uneven-col-5 {
+  grid-column: span 6;
+}
+
+.uneven-spacing-1 {
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.uneven-spacing-2 {
+  margin-top: 20px;
+  margin-bottom: 60px;
+}
+
+.uneven-spacing-3 {
+  margin-top: 60px;
+  margin-bottom: 40px;
+}
+
+/* Button alignment fixes */
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.button-container-center {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+.button-container-end {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Asymmetrical layout */
+.asymmetrical-container {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 30px;
+}
+
+@media (max-width: 768px) {
+  .asymmetrical-container {
+    grid-template-columns: 1fr;
+  }
+
+  .uneven-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .uneven-col-1,
+  .uneven-col-2,
+  .uneven-col-3,
+  .uneven-col-4,
+  .uneven-col-5 {
+    grid-column: span 1;
+  }
+
+  .mega-menu {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+    max-height: 80vh;
+  }
+}
+
+/* Brutalist logo */
+.brutalist-logo {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 32px;
+  letter-spacing: 2px;
+  transform: skew(-5deg, 0);
+  display: inline-block;
+  padding: 0 10px;
+  background-color: hsl(var(--primary));
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.brutalist-logo::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.brutalist-logo:hover::after {
+  transform: translateX(100%);
+}
+
+/* Banner button */
+.banner-button {
+  background: hsl(var(--accent));
+  color: white;
+  border: 4px solid white;
+  padding: 10px 20px;
+  font-family: "Space Mono", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  height: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-button:hover {
+  background: white;
+  color: hsl(var(--accent));
+  transform: scale(1.05) rotate(-1deg);
+}
+
+.banner-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.banner-button:hover::after {
+  transform: translateX(100%);
+}
+
+/* Hero buttons */
+.hero-button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.hero-button {
+  background: hsl(var(--primary));
+  color: white;
+  border: 4px solid hsl(var(--primary));
+  padding: 10px 20px;
+  font-family: "Space Mono", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  height: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-button::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 100%;
+  height: 100%;
+  background: hsl(var(--primary-dark));
+  z-index: -1;
+}
+
+.hero-button:hover {
+  background: hsl(var(--accent));
+  border-color: hsl(var(--accent));
+  transform: scale(1.05) rotate(-1deg);
+}
+
+.hero-button-outline {
+  background: white;
+  color: hsl(var(--primary));
+}
+
+.hero-button-outline:hover {
+  background: hsl(var(--primary));
+  color: white;
+}
+
+/* Newsletter form */
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .newsletter-form {
+    flex-direction: row;
+  }
+
+  .newsletter-input {
+    flex: 1;
+    border-right: 0;
+  }
+
+  .newsletter-button {
+    border-left: 0;
+  }
+}
+
+.newsletter-input {
+  border: 4px solid white;
+  background: hsl(var(--primary-dark));
+  color: white;
+  padding: 10px 20px;
+  font-family: "Space Mono", monospace;
+  height: 50px;
+  width: 100%;
+}
+
+.newsletter-button {
+  background: white;
+  color: hsl(var(--primary));
+  border: 4px solid white;
+  padding: 10px 20px;
+  font-family: "Space Mono", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.newsletter-button:hover {
+  background: hsl(var(--primary-dark));
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Doodle styles */
+.doodle {
+  color: hsl(var(--accent));
+  transition: all 0.3s;
+}
+
+.doodle:hover {
+  transform: rotate(10deg) scale(1.1);
+}
+
+.doodle-container {
+  pointer-events: none;
+}
+
+/* Button animations */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes wobble {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  15% {
+    transform: translateX(-5px) rotate(-5deg);
+  }
+  30% {
+    transform: translateX(4px) rotate(3deg);
+  }
+  45% {
+    transform: translateX(-3px) rotate(-3deg);
+  }
+  60% {
+    transform: translateX(2px) rotate(2deg);
+  }
+  75% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+}
+
+.animate-wobble {
+  animation: wobble 0.5s ease-in-out;
+}
+
+@keyframes glitch-animation {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-3px, 3px);
+  }
+  40% {
+    transform: translate(-3px, -3px);
+  }
+  60% {
+    transform: translate(3px, 3px);
+  }
+  80% {
+    transform: translate(3px, -3px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+.animate-glitch {
+  animation: glitch-animation 0.3s infinite;
+}
+
+/* Background pattern */
+.pattern-bg {
+  background-color: hsl(var(--background));
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E");
+}
