@@ -1,59 +1,78 @@
-"use client"
+"use client";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ChevronRight,
+  Minus,
+  Plus,
+  Heart,
+  Share2,
+  ShoppingBag,
+  Truck,
+  RotateCcw,
+  Shield,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { FeaturedProducts } from "@/components/featured-products";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { ChevronRight, Minus, Plus, Heart, Share2, ShoppingBag, Truck, RotateCcw, Shield } from "lucide-react"
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+  colors?: string[];
+  reviews: { average: number; count: number };
+}
 
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FeaturedProducts } from "@/components/featured-products"
+export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
-// Sample product data
-const products = [
-  {
-    id: 1,
-    name: "Crystal Pendant Necklace",
-    price: 49.99,
-    category: "jewelry",
-    description:
-      "This elegant crystal pendant necklace features a stunning design that catches the light beautifully. The pendant hangs from a delicate chain that sits perfectly on the neckline, making it an ideal accessory for both casual and formal occasions.",
-    features: [
-      "High-quality crystal pendant",
-      "Adjustable chain length",
-      "Hypoallergenic materials",
-      "Tarnish-resistant finish",
-    ],
-    images: [
-      "/placeholder.svg?height=600&width=600",
-      "/placeholder.svg?height=600&width=600",
-      "/placeholder.svg?height=600&width=600",
-      "/placeholder.svg?height=600&width=600",
-    ],
-    colors: ["Silver", "Gold", "Rose Gold"],
-    inStock: true,
-    reviews: {
-      average: 4.5,
-      count: 128,
-    },
-  },
-]
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const res = await fetch(`http://localhost:5000/api/products/${params.id}`);
+        if (!res.ok) throw new Error("Product not found");
+        const data = await res.json();
+        setProduct(data);
+        if (data.colors && data.colors.length > 0) setSelectedColor(data.colors[0]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  const productId = Number.parseInt(params.id)
-  const product = products.find((p) => p.id === productId) || products[0]
+    fetchProduct();
+  }, [params.id]);
 
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [selectedColor, setSelectedColor] = useState(product.colors[0])
-  const [quantity, setQuantity] = useState(1)
+  if (loading)
+    return <p className="text-center py-8">Loading product details...</p>;
+  if (!product)
+    return <p className="text-center py-8">Product not found</p>;
 
+  // Helper functions
   const decreaseQuantity = () => {
-    if (quantity > 1) setQuantity(quantity - 1)
-  }
+    if (quantity > 1) setQuantity(quantity - 1);
+  };
 
   const increaseQuantity = () => {
-    setQuantity(quantity + 1)
-  }
+    setQuantity(quantity + 1);
+  };
+
+  const fullImageUrl = `http://localhost:5000${product.image}`;
 
   return (
     <div className="flex flex-col min-h-screen pt-20">
@@ -64,8 +83,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             Home
           </Link>
           <ChevronRight className="h-4 w-4 mx-1" />
-          <Link href={`/category/${product.category}`} className="hover:text-gray-700">
-            {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
+          <Link
+            href={`/category/${product.category}`}
+            className="hover:text-gray-700"
+          >
+            {product.category.charAt(0).toUpperCase() +
+              product.category.slice(1)}
           </Link>
           <ChevronRight className="h-4 w-4 mx-1" />
           <span className="text-gray-900">{product.name}</span>
@@ -77,23 +100,25 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div className="space-y-4">
             <div className="brutalist-image relative h-[400px] md:h-[500px]">
               <Image
-                src={product.images[selectedImage] || "/placeholder.svg"}
+                src={fullImageUrl}
                 alt={product.name}
                 fill
                 className="object-contain"
               />
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {product.images.map((image, index) => (
+              {[fullImageUrl].map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`relative h-20 overflow-hidden border-4 ${
-                    selectedImage === index ? "border-black" : "border-gray-300"
+                    selectedImage === index
+                      ? "border-black"
+                      : "border-gray-300"
                   }`}
                 >
                   <Image
-                    src={image || "/placeholder.svg"}
+                    src={img}
                     alt={`${product.name} - Image ${index + 1}`}
                     fill
                     className="object-cover"
@@ -107,7 +132,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div className="space-y-6 brutalist-container">
             <div>
               <h1 className="text-3xl font-bold uppercase">{product.name}</h1>
-              <div className="mt-2 text-3xl font-bold">${product.price.toFixed(2)}</div>
+              <div className="mt-2 text-3xl font-bold">
+                ${product.price.toFixed(2)}
+              </div>
               <div className="mt-1 flex items-center">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -136,34 +163,46 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <p className="text-gray-700 uppercase">{product.description}</p>
 
             {/* Color Selection */}
-            <div>
-              <h3 className="text-sm font-bold text-black mb-2 uppercase">Color</h3>
-              <div className="flex space-x-2">
-                {product.colors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-3 py-1 uppercase font-bold ${
-                      selectedColor === color
-                        ? "bg-black text-white border-4 border-black"
-                        : "border-4 border-black hover:bg-gray-100"
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
+            {product.colors && product.colors.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-black mb-2 uppercase">
+                  Color
+                </h3>
+                <div className="flex space-x-2">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`px-3 py-1 uppercase font-bold ${
+                        selectedColor === color
+                          ? "bg-black text-white border-4 border-black"
+                          : "border-4 border-black hover:bg-gray-100"
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Quantity */}
             <div>
-              <h3 className="text-sm font-bold text-black mb-2 uppercase">Quantity</h3>
+              <h3 className="text-sm font-bold text-black mb-2 uppercase">
+                Quantity
+              </h3>
               <div className="flex items-center border-4 border-black w-32">
-                <button onClick={decreaseQuantity} className="px-3 py-1 text-black hover:bg-black hover:text-white">
+                <button
+                  onClick={decreaseQuantity}
+                  className="px-3 py-1 text-black hover:bg-black hover:text-white"
+                >
                   <Minus size={16} />
                 </button>
                 <span className="flex-1 text-center font-bold">{quantity}</span>
-                <button onClick={increaseQuantity} className="px-3 py-1 text-black hover:bg-black hover:text-white">
+                <button
+                  onClick={increaseQuantity}
+                  className="px-3 py-1 text-black hover:bg-black hover:text-white"
+                >
                   <Plus size={16} />
                 </button>
               </div>
@@ -174,10 +213,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <button className="brutalist-btn flex items-center justify-center">
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 ADD TO CART
-              </button>
-              <button className="brutalist-btn brutalist-btn-outline flex items-center justify-center">
-                <Heart className="mr-2 h-5 w-5" />
-                ADD TO WISHLIST
               </button>
             </div>
 
@@ -229,18 +264,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <TabsContent value="details" className="p-4 border rounded-b-md mt-1">
               <div className="prose max-w-none">
                 <p>{product.description}</p>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies tincidunt,
-                  nisl nisl aliquam nisl, eget ultricies nisl nisl eget nisl. Nullam auctor, nisl eget ultricies
-                  tincidunt, nisl nisl aliquam nisl, eget ultricies nisl nisl eget nisl.
-                </p>
               </div>
             </TabsContent>
             <TabsContent value="features" className="p-4 border rounded-b-md mt-1">
               <ul className="list-disc pl-5 space-y-2">
-                {product.features.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
+                <li>High-quality materials</li>
+                <li>Eco-friendly packaging</li>
+                <li>Handcrafted with care</li>
               </ul>
             </TabsContent>
             <TabsContent value="reviews" className="p-4 border rounded-b-md mt-1">
@@ -263,9 +293,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     </svg>
                   ))}
                 </div>
-                <span className="ml-2 text-lg font-medium">{product.reviews.average} out of 5</span>
+                <span className="ml-2 text-lg font-medium">
+                  {product.reviews.average} out of 5
+                </span>
               </div>
-              <p className="text-gray-500 mb-4">Based on {product.reviews.count} reviews</p>
+              <p className="text-gray-500 mb-4">
+                Based on {product.reviews.count} reviews
+              </p>
               <Button>Write a Review</Button>
             </TabsContent>
           </Tabs>
@@ -278,5 +312,5 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
