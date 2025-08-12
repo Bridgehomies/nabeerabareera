@@ -1,52 +1,136 @@
 "use client"
 
-import type React from "react"
-import { useCart } from "@/context/CartContext"
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Filter, ArrowUpDown, ShoppingBag, Heart, Star } from "lucide-react"
+import { ChevronRight, Filter, ArrowUpDown, Star } from "lucide-react"
+import { FiShoppingCart } from "react-icons/fi"
 import { ScrollingGrid } from "@/components/ui-brutalist/scrolling-grid"
 import { AnimatedButton } from "@/components/ui-brutalist/animated-button"
 import { CircleDoodle, StarDoodle } from "@/components/ui-brutalist/doodles"
-import { getNewArrivals, Product } from "@/lib/data/products"
+import { useCart } from "@/context/CartContext"
+import { toast } from "sonner"
+
+// Define Product type (same as in CategoryProducts)
+export type Product = {
+  _id: string
+  name: string
+  price: number
+  salePrice?: number | null
+  discount?: number
+  isSale?: boolean
+  isNew?: boolean
+  category: string
+  subcategory?: string
+  description?: string
+  features?: string[]
+  image: string
+  images?: string[]
+  colors?: string[]
+  sizes?: string[]
+  inStock: boolean
+  dateAdded: string
+  isFeatured?: boolean
+  rating: number
+  reviews: number
+  tags?: string[]
+}
 
 export default function NewArrivalsPage() {
   const [activeCategory, setActiveCategory] = useState("all")
   const [sortOption, setSortOption] = useState("newest")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const { addToCart } = useCart()
 
-  // Get new arrivals from central data store
-  const newArrivals = getNewArrivals()
+  // Fetch products from backend API
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
+        if (!res.ok) throw new Error("Failed to fetch products")
+        const data = await res.json()
 
-  // Filter products by category
-  const filteredProducts =
-    activeCategory === "all" ? newArrivals : newArrivals.filter((product) => product.category === activeCategory)
+        // Add derived fields (isNew, isSale, discount)
+        const processed = data.map((product: any) => {
+          const isNew = isProductNew(product.dateAdded)
+          const isSale =
+            typeof product.salePrice === "number" && product.salePrice < product.price
+          const discount = isSale
+            ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+            : undefined
+
+          return {
+            ...product,
+            isNew,
+            isSale,
+            discount,
+          }
+        })
+
+        setProducts(processed)
+      } catch (error) {
+        console.error("Error fetching products:", error)
+        toast.error("Failed to load products. Please try again later.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  // Calculate if product is new (within last 30 days)
+  const isProductNew = (dateString: string): boolean => {
+    const productDate = new Date(dateString)
+    const currentDate = new Date()
+    const diffTime = currentDate.getTime() - productDate.getTime()
+    const diffDays = diffTime / (1000 * 60 * 60 * 24)
+    return diffDays <= 30
+  }
+
+  // Filter products by category and newness
+  const filteredProducts = products.filter((product) => {
+    return product.isNew && (activeCategory === "all" || product.category === activeCategory)
+  })
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortOption === "newest") {
       return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
     } else if (sortOption === "price-low") {
-      return a.price - b.price
+      return (a.salePrice ?? a.price) - (b.salePrice ?? b.price)
     } else if (sortOption === "price-high") {
-      return b.price - a.price
+      return (b.salePrice ?? b.price) - (a.salePrice ?? a.price)
     } else if (sortOption === "rating") {
       return b.rating - a.rating
     }
     return 0
   })
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <p>Loading products...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen relative">
-      <ScrollingGrid />
-
       {/* Hero Section */}
-      <section className="relative h-[60vh] w-full overflow-hidden border-b-8 border-primary">
+      <section className="relative h-[70vh] w-full overflow-hidden border-b-8 border-primary">
         <div className="absolute inset-0 bg-black/10 z-10" />
-        <Image src="https://images.unsplash.com/photo-1581041122145-9f17c04cd153?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="New Arrivals" fill className="object-cover" priority />
+        <Image
+          src="https://images.unsplash.com/photo-1581041122145-9f17c04cd153?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="New Arrivals"
+          fill
+          className="object-cover"
+          priority
+        />
         <div className="relative z-20 container mx-auto h-full flex flex-col justify-center px-4 md:px-6">
-          <div className="brutalist-container bg-white max-w-2xl ">
+          <div className="brutalist-container bg-white max-w-2xl">
             <StarDoodle className="absolute -top-10 -right-10 text-accent" />
             <div className="flex items-center text-black text-sm mb-2 uppercase font-bold">
               <Link href="/" className="hover:text-gray-700">
@@ -93,7 +177,7 @@ export default function NewArrivalsPage() {
 
         {/* Expanded Filter Panel */}
         {isFilterOpen && (
-          <div className="brutalist-container mb-8 ">
+          <div className="brutalist-container mb-8">
             <h3 className="text-xl font-bold mb-4 uppercase">Filter By Category</h3>
             <div className="flex flex-wrap gap-3">
               <CategoryButton active={activeCategory === "all"} onClick={() => setActiveCategory("all")}>
@@ -103,7 +187,7 @@ export default function NewArrivalsPage() {
                 Jewelry
               </CategoryButton>
               <CategoryButton active={activeCategory === "mens-coats"} onClick={() => setActiveCategory("mens-coats")}>
-                Men's Coats
+                Coats
               </CategoryButton>
               <CategoryButton
                 active={activeCategory === "kids-clothing"}
@@ -116,9 +200,9 @@ export default function NewArrivalsPage() {
         )}
 
         {/* New Arrivals Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-16" >
           {sortedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} addToCart={addToCart} toast={toast} />
           ))}
         </div>
 
@@ -134,19 +218,19 @@ export default function NewArrivalsPage() {
         )}
 
         {/* Newsletter Signup */}
-        <div className="mt-16 brutalist-container text-white ">
+        <div className="mt-28 brutalist-container text-white">
           <CircleDoodle className="absolute top-5 right-5 text-white opacity-30" />
           <h2 className="text-3xl font-bold mb-4 uppercase text-black">Be the First to Know</h2>
           <p className="mb-6 uppercase text-gray-600 text-xl font-semibold">
             Sign up for our newsletter to get early access to new arrivals and exclusive offers.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 ">
+          <div className="flex flex-col sm:flex-row gap-4">
             <input
               type="email"
               placeholder="YOUR EMAIL ADDRESS"
               className="newsletter-input flex-grow placeholder-white"
             />
-            <AnimatedButton variant="white"  iconPosition="right">
+            <AnimatedButton variant="white" iconPosition="right">
               Subscribe
             </AnimatedButton>
           </div>
@@ -170,7 +254,6 @@ function SortButton({
       onClick={onClick}
       className={`
         relative px-3 py-1 text-sm font-bold uppercase transition-all
-        
         ${
           active
             ? "bg-primary text-white border-2 border-primary-dark"
@@ -198,7 +281,6 @@ function CategoryButton({
       onClick={onClick}
       className={`
         relative px-4 py-2 text-sm font-bold uppercase 
-        
         ${
           active
             ? "bg-primary text-white border-4 border-primary-dark"
@@ -207,7 +289,6 @@ function CategoryButton({
       `}
     >
       {children}
-      {/* Decorative corner */}
       <span
         className={`absolute top-0 right-0 w-3 h-3 ${
           active ? "bg-accent" : "bg-secondary"
@@ -217,46 +298,84 @@ function CategoryButton({
   )
 }
 
-function ProductCard({ product }: { product: any }) {
+function ProductCard({
+  product,
+  addToCart,
+  toast,
+}: {
+  product: Product
+  addToCart: Function
+  toast: any
+}) {
+  const [isHovered, setIsHovered] = useState(false)
+  const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${product.image || "/placeholder.svg"}`
+
+  const handleAddToCart = () => {
+    const cartProduct = {
+      id: product._id,
+      name: product.name,
+      price: product.isSale && product.salePrice ? product.salePrice : product.price,
+      image: imageUrl,
+    }
+
+    addToCart(cartProduct)
+    toast.success(`${cartProduct.name} added to cart`)
+  }
+
   const daysSinceAdded = Math.floor(
-    (new Date().getTime() - new Date(product.dateAdded).getTime()) / (1000 * 60 * 60 * 24),
+    (new Date().getTime() - new Date(product.dateAdded).getTime()) / (1000 * 60 * 60 * 24)
   )
 
   return (
-    <div className="brutalist-card transform-card group">
+    <div
+      className="brutalist-card transform-card group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="relative h-[300px]">
-        <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
-
+        <Image src={imageUrl} alt={product.name} fill className="object-cover" />
         {/* New badge */}
-        <div className="absolute top-0 left-0">
-          <div className="brutalist-badge bg-accent transform -rotate-12">
-            {daysSinceAdded <= 3 ? "JUST IN" : "NEW"}
+        {product.isNew && (
+          <div className="absolute top-0 left-0">
+            <div className="brutalist-badge bg-accent transform -rotate-12">
+              {daysSinceAdded <= 3 ? "JUST IN" : "NEW"}
+            </div>
           </div>
-        </div>
-
+        )}
+        {/* Sale badge */}
+        {product.isSale && product.salePrice !== null && (
+          <div className="absolute top-0 left-0">
+            <div className="brutalist-badge bg-red-600 transform rotate-12">SALE</div>
+          </div>
+        )}
         {/* Days since added */}
         <div className="absolute top-0 right-0 bg-black text-white px-2 py-1 text-xs font-bold transform rotate-12">
           {daysSinceAdded} {daysSinceAdded === 1 ? "DAY" : "DAYS"} AGO
         </div>
-
         {/* Quick actions */}
         <div className="absolute bottom-0 left-0 right-0 bg-white border-t-4 border-primary p-2 flex justify-between">
-            <button className="p-2 border-2 border-primary">
-              <Heart className="h-5 w-5" />
-            </button>
-            <button onClick={() => useCart(Product)} className="p-2 bg-red-600 text-white  border-red-600 hover:bg-green-500 flex items-center justify-center">
-              <ShoppingBag className="h-5 w-5 mr-2" />
-              <span>ADD TO CART</span>
-            </button>
-          </div>
+          <button
+            onClick={handleAddToCart}
+            className="p-2 bg-red-600 text-white border-red-600 hover:bg-green-500 flex items-center justify-center w-full"
+          >
+            <FiShoppingCart className="h-5 w-5 mr-2" />
+            <span>ADD TO CART</span>
+          </button>
+        </div>
       </div>
-
       <div className="p-4 border-t-4 border-primary">
-        <Link href={`/product/${product.id}`} className="hover:underline">
+        <Link href={`/product/${product._id}`} className="hover:underline">
           <h3 className="font-bold text-lg mb-1 uppercase">{product.name}</h3>
         </Link>
         <div className="flex justify-between items-center">
-          <span className="font-bold transform  inline-block">${product.price.toFixed(2)}</span>
+          {product.isSale && product.salePrice !== null ? (
+            <>
+              <span className="text-accent font-bold">${(product.salePrice ?? 0).toFixed(2)}</span>
+              <span className="ml-2 text-gray-500 line-through">${product.price.toFixed(2)}</span>
+            </>
+          ) : (
+            <span className="font-bold">${product.price.toFixed(2)}</span>
+          )}
           <div className="flex items-center">
             <Star className="h-4 w-4 text-yellow-500 mr-1" />
             <span className="text-sm font-bold">{product.rating}</span>

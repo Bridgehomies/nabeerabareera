@@ -15,7 +15,7 @@ export function Footer() {
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">About NabeeraBaeera</h3>
             <p className="text-sm leading-relaxed mb-4">
-              NabeeraBaeera offers premium artificial jewelry, stylish men's coats, and adorable kids clothing. Our
+              NabeeraBaeera offers premium artificial jewelry, stylish Coats, and adorable kids clothing. Our
               mission is to provide high-quality fashion at affordable prices.
             </p>
             <div className="flex space-x-4">
@@ -45,7 +45,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/category/mens-coats" className="uppercase hover:text-accent transition-colors">
-                  Men's Coats
+                  Coats
                 </Link>
               </li>
               <li>
