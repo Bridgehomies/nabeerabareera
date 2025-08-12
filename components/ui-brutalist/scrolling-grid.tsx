@@ -37,16 +37,28 @@ export function ScrollingGrid() {
         ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"
         ctx.lineWidth = 1
 
-        // Draw vertical lines
-        for (let x = -offset % gridSize; x < canvas.width; x += gridSize) {
+        // Calculate center of canvas
+        const centerX = canvas.width / 2
+        const centerY = canvas.height / 2
+
+        // Draw vertical lines, centered
+        for (
+          let x = centerX - offset % gridSize;
+          x > -gridSize && x < canvas.width + gridSize;
+          x += gridSize
+        ) {
           ctx.beginPath()
           ctx.moveTo(x, 0)
           ctx.lineTo(x, canvas.height)
           ctx.stroke()
         }
 
-        // Draw horizontal lines
-        for (let y = -offset % gridSize; y < canvas.height; y += gridSize) {
+        // Draw horizontal lines, centered
+        for (
+          let y = centerY - offset % gridSize;
+          y > -gridSize && y < canvas.height + gridSize;
+          y += gridSize
+        ) {
           ctx.beginPath()
           ctx.moveTo(0, y)
           ctx.lineTo(canvas.width, y)
@@ -81,6 +93,7 @@ export function ScrollingGrid() {
           backgroundImage:
             "linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px)",
           backgroundSize: "50px 50px",
+          backgroundPosition: "center", // Center the static grid
         }}
       />
     )

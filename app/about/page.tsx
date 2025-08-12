@@ -17,7 +17,7 @@ export default function AboutPage() {
               NabeeraBaeera was founded in 2020 with a vision to provide quality fashion at affordable prices.
             </p>
             <p className="mb-4 uppercase">
-              Our focus on artificial jewelry, men's coats, and kids clothing allows us to specialize and perfect our
+              Our focus on artificial jewelry, Coats, and kids clothing allows us to specialize and perfect our
               craft.
             </p>
             <p className="uppercase">

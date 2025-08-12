@@ -28,30 +28,32 @@ export function Newsletter() {
   }
 
   return (
-    <section className="py-16 bg-primary-dark text-white relative">
-      <StarDoodle className="absolute top-10 left-10 text-white opacity-30" />
-      <ZigzagDoodle className="absolute bottom-10 right-10 text-white opacity-30" />
+    <section className="py-8 sm:py-12 md:py-16 bg-primary-dark text-white relative">
+      <StarDoodle className="absolute top-4 sm:top-10 left-4 sm:left-10 text-white opacity-30" />
+      <ZigzagDoodle className="absolute bottom-4 sm:bottom-10 right-4 sm:right-10 text-white opacity-30" />
 
-      <div className="container mx-auto px-4 md:px-6 text-center">
-        <div className="brutalist-container bg-primary-dark border-white">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 uppercase text-black">Join Our Newsletter</h2>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto mb-8 uppercase">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 text-center">
+        <div className="brutalist-container bg-primary-dark border-white p-4 sm:p-6 md:p-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 uppercase text-black">
+            Join Our Newsletter
+          </h2>
+          <p className="text-sm sm:text-base md:text-lg text-gray-700 max-w-xs sm:max-w-md md:max-w-2xl mx-auto mb-4 sm:mb-6 uppercase">
             Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
           </p>
 
-          <form onSubmit={handleSubmit} className="flex text-white flex-col sm:flex-row max-w-md mx-auto gap-1">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row max-w-xs sm:max-w-md md:max-w-lg mx-auto gap-2 sm:gap-4">
             <input
               type="email"
               placeholder="YOUR EMAIL ADDRESS"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="newsletter-input flex-grow placeholder-white h-12 flex items-center justify-center text-left"
+              className="newsletter-input flex-grow placeholder-white h-10 sm:h-12 md:h-14 flex items-center justify-center text-left p-2 sm:p-3 text-sm sm:text-base"
             />
-            <AnimatedButton 
-              variant="white" 
-              animation="fly" 
-              className="whitespace-nowrap h-12 hover:bg-red-500 flex items-center justify-center"
+            <AnimatedButton
+              variant="white"
+              animation="fly"
+              className="whitespace-nowrap h-10 sm:h-12 md:h-14 hover:bg-red-500 flex items-center justify-center text-sm sm:text-base"
               iconPosition="none"
             >
               {isSubmitting ? (
@@ -59,7 +61,7 @@ export function Newsletter() {
               ) : (
                 <>
                   SUBSCRIBE
-                  <Send className="ml-2 h-4 w-4 inline group-hover:-translate-y-1 transition-transform" />
+                  <Send className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:w-4 inline group-hover:-translate-y-1 transition-transform" />
                 </>
               )}
             </AnimatedButton>

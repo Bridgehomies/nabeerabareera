@@ -21,13 +21,15 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { FeaturedProducts } from "@/components/featured-products";
+import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
 
 interface Product {
   _id: string;
   name: string;
   price: number;
   description: string;
-  image: string;
+  images: string[];
   category: string;
   colors?: string[];
   reviews: { average: number; count: number };
@@ -39,6 +41,25 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    const cartProduct = {
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images?.[0]
+        ? `http://localhost:5000${product.images[0]}`
+        : "/placeholder.svg",
+      quantity,
+      color: selectedColor || null,
+    };
+
+    addToCart(cartProduct);
+    toast.success(`${product.name} added to cart!`);
+  };
 
   useEffect(() => {
     async function fetchProduct() {
@@ -63,7 +84,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   if (!product)
     return <p className="text-center py-8">Product not found</p>;
 
-  // Helper functions
   const decreaseQuantity = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
@@ -72,7 +92,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     setQuantity(quantity + 1);
   };
 
-  const fullImageUrl = `http://localhost:5000${product.image}`;
+  const fullImageUrl =
+    product.images?.[selectedImage]
+      ? `http://localhost:5000${product.images[selectedImage]}`
+      : "/placeholder.svg";
 
   return (
     <div className="flex flex-col min-h-screen pt-20">
@@ -99,15 +122,17 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           {/* Product Images */}
           <div className="space-y-4">
             <div className="brutalist-image relative h-[400px] md:h-[500px]">
-              <Image
-                src={fullImageUrl}
-                alt={product.name}
-                fill
-                className="object-contain"
-              />
+              {product.images?.[selectedImage] && (
+                <Image
+                  src={`http://localhost:5000${product.images[selectedImage]}`}
+                  alt={product.name}
+                  fill
+                  className="object-contain"
+                />
+              )}
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {[fullImageUrl].map((img, index) => (
+              {product.images?.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -118,7 +143,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   }`}
                 >
                   <Image
-                    src={img}
+                    src={`http://localhost:5000${img}`}
                     alt={`${product.name} - Image ${index + 1}`}
                     fill
                     className="object-cover"
@@ -210,7 +235,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
             {/* Add to Cart */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <button className="brutalist-btn flex items-center justify-center">
+              <button
+                onClick={handleAddToCart}
+                className="brutalist-btn flex items-center justify-center"
+              >
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 ADD TO CART
               </button>
