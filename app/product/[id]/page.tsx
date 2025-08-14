@@ -24,7 +24,6 @@ import { FeaturedProducts } from "@/components/featured-products";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 
-
 interface Product {
   _id: string;
   name: string;
@@ -62,8 +61,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     toast.success(`${product.name} added to cart!`);
   };
 
-
-
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -87,7 +84,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   if (!product)
     return <p className="text-center py-8">Product not found</p>;
 
-  // Helper functions
   const decreaseQuantity = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
@@ -97,11 +93,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   };
 
   const fullImageUrl =
-  product.images?.[selectedImage]
-    ? `http://localhost:5000${product.images[selectedImage]}`
-    : "/placeholder.svg";
-
-
+    product.images?.[selectedImage]
+      ? `http://localhost:5000${product.images[selectedImage]}`
+      : "/placeholder.svg";
 
   return (
     <div className="flex flex-col min-h-screen pt-20">
@@ -136,7 +130,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   className="object-contain"
                 />
               )}
-
             </div>
             <div className="grid grid-cols-4 gap-2">
               {product.images?.map((img, index) => (
@@ -144,7 +137,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`relative h-20 overflow-hidden border-4 ${
-                    selectedImage === index ? "border-black" : "border-gray-300"
+                    selectedImage === index
+                      ? "border-black"
+                      : "border-gray-300"
                   }`}
                 >
                   <Image
@@ -156,7 +151,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 </button>
               ))}
             </div>
-
           </div>
 
           {/* Product Info */}
@@ -248,8 +242,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 ADD TO CART
               </button>
-
-
             </div>
 
             {/* Shipping Info */}
