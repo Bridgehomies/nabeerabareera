@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Filter, ArrowUpDown, Star } from "lucide-react"
@@ -11,7 +11,7 @@ import { CircleDoodle, StarDoodle } from "@/components/ui-brutalist/doodles"
 import { useCart } from "@/context/CartContext"
 import { toast } from "sonner"
 
-// Define Product type (same as in CategoryProducts)
+// Define Product type
 export type Product = {
   _id: string
   name: string
@@ -36,29 +36,42 @@ export type Product = {
   tags?: string[]
 }
 
+// Define API response type
+type ProductApiResponse = Omit<Product, 'isNew' | 'isSale' | 'discount'>
+
 export default function NewArrivalsPage() {
   const [activeCategory, setActiveCategory] = useState("all")
   const [sortOption, setSortOption] = useState("newest")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { addToCart } = useCart()
 
   // Fetch products from backend API
   useEffect(() => {
     async function fetchProducts() {
       try {
+        setLoading(true)
+        setError(null)
+        
+        if (!process.env.NEXT_PUBLIC_API_URL) {
+          throw new Error("API configuration error")
+        }
+        
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
-        if (!res.ok) throw new Error("Failed to fetch products")
-        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(`Failed to fetch products: ${res.status} ${res.statusText}`)
+        }
+        const data: ProductApiResponse[] = await res.json()
 
         // Add derived fields (isNew, isSale, discount)
-        const processed = data.map((product: any) => {
+        const processed = data.map((product) => {
           const isNew = isProductNew(product.dateAdded)
           const isSale =
             typeof product.salePrice === "number" && product.salePrice < product.price
           const discount = isSale
-            ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+            ? Math.round(((product.price - product.salePrice!) / product.price) * 100)
             : undefined
 
           return {
@@ -72,6 +85,7 @@ export default function NewArrivalsPage() {
         setProducts(processed)
       } catch (error) {
         console.error("Error fetching products:", error)
+        setError(error instanceof Error ? error.message : "Failed to load products")
         toast.error("Failed to load products. Please try again later.")
       } finally {
         setLoading(false)
@@ -91,28 +105,50 @@ export default function NewArrivalsPage() {
   }
 
   // Filter products by category and newness
-  const filteredProducts = products.filter((product) => {
-    return product.isNew && (activeCategory === "all" || product.category === activeCategory)
-  })
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      return product.isNew && (activeCategory === "all" || product.category === activeCategory)
+    })
+  }, [products, activeCategory])
 
   // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortOption === "newest") {
-      return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
-    } else if (sortOption === "price-low") {
-      return (a.salePrice ?? a.price) - (b.salePrice ?? b.price)
-    } else if (sortOption === "price-high") {
-      return (b.salePrice ?? b.price) - (a.salePrice ?? a.price)
-    } else if (sortOption === "rating") {
-      return b.rating - a.rating
-    }
-    return 0
-  })
+  const sortedProducts = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      if (sortOption === "newest") {
+        return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
+      } else if (sortOption === "price-low") {
+        return (a.salePrice ?? a.price) - (b.salePrice ?? b.price)
+      } else if (sortOption === "price-high") {
+        return (b.salePrice ?? b.price) - (a.salePrice ?? a.price)
+      } else if (sortOption === "rating") {
+        return b.rating - a.rating
+      }
+      return 0
+    })
+  }, [filteredProducts, sortOption])
 
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <p>Loading products...</p>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-lg">Loading products...</p>
+          <div className="sr-only" aria-live="polite">Loading products...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="text-center p-8 brutalist-container max-w-md">
+          <h2 className="text-2xl font-bold mb-4">Oops! Something went wrong</h2>
+          <p className="mb-6">We couldn't load the products. Please check your connection and try again.</p>
+          <AnimatedButton onClick={() => window.location.reload()}>
+            Try Again
+          </AnimatedButton>
+        </div>
       </div>
     )
   }
@@ -133,7 +169,7 @@ export default function NewArrivalsPage() {
           <div className="brutalist-container bg-white max-w-2xl">
             <StarDoodle className="absolute -top-10 -right-10 text-accent" />
             <div className="flex items-center text-black text-sm mb-2 uppercase font-bold">
-              <Link href="/" className="hover:text-gray-700">
+              <Link href="/" className="hover:text-gray-700 focus:underline">
                 Home
               </Link>
               <ChevronRight className="h-4 w-4 mx-1" />
@@ -153,7 +189,9 @@ export default function NewArrivalsPage() {
           <div className="mb-4 md:mb-0">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center font-bold uppercase mb-4 md:mb-0 transform hover:rotate-2 transition-transform"
+              aria-expanded={isFilterOpen}
+              aria-controls="filter-panel"
+              className="flex items-center font-bold uppercase mb-4 md:mb-0 transform hover:rotate-2 transition-transform focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <Filter className="mr-2 h-5 w-5" /> Filter & Sort
             </button>
@@ -177,7 +215,7 @@ export default function NewArrivalsPage() {
 
         {/* Expanded Filter Panel */}
         {isFilterOpen && (
-          <div className="brutalist-container mb-8">
+          <div id="filter-panel" className="brutalist-container mb-8">
             <h3 className="text-xl font-bold mb-4 uppercase">Filter By Category</h3>
             <div className="flex flex-wrap gap-3">
               <CategoryButton active={activeCategory === "all"} onClick={() => setActiveCategory("all")}>
@@ -200,14 +238,20 @@ export default function NewArrivalsPage() {
         )}
 
         {/* New Arrivals Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-16" >
-          {sortedProducts.map((product) => (
-            <ProductCard key={product._id} product={product} addToCart={addToCart} toast={toast} />
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-16">
+          {sortedProducts.length > 0 ? (
+            sortedProducts.map((product) => (
+              <ProductCardMemo key={product._id} product={product} />
+            ))
+          ) : (
+            <div className="col-span-full">
+              <ProductSkeleton />
+            </div>
+          )}
         </div>
 
         {/* No Products Found */}
-        {sortedProducts.length === 0 && (
+        {sortedProducts.length === 0 && !loading && (
           <div className="text-center py-16">
             <h3 className="text-2xl font-bold mb-4">No products found</h3>
             <p className="mb-8">Try changing your filter or check back soon for new arrivals.</p>
@@ -229,6 +273,7 @@ export default function NewArrivalsPage() {
               type="email"
               placeholder="YOUR EMAIL ADDRESS"
               className="newsletter-input flex-grow placeholder-white"
+              aria-label="Email address for newsletter"
             />
             <AnimatedButton variant="white" iconPosition="right">
               Subscribe
@@ -240,6 +285,7 @@ export default function NewArrivalsPage() {
   )
 }
 
+// Sort Button Component
 function SortButton({
   children,
   active,
@@ -260,6 +306,7 @@ function SortButton({
             : "bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white"
         }
       `}
+      aria-pressed={active}
     >
       <ArrowUpDown className={`inline-block mr-1 h-3 w-3 ${active ? "text-white" : "text-primary"}`} />
       {children}
@@ -267,6 +314,7 @@ function SortButton({
   )
 }
 
+// Category Button Component
 function CategoryButton({
   children,
   active,
@@ -287,6 +335,7 @@ function CategoryButton({
             : "bg-white text-primary border-4 border-primary hover:bg-primary hover:text-white"
         }
       `}
+      aria-pressed={active}
     >
       {children}
       <span
@@ -298,16 +347,11 @@ function CategoryButton({
   )
 }
 
-function ProductCard({
-  product,
-  addToCart,
-  toast,
-}: {
-  product: Product
-  addToCart: Function
-  toast: any
-}) {
+// Product Card Component
+const ProductCard = ({ product }: { product: Product }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const { addToCart } = useCart()
+  
   const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${product.image || "/placeholder.svg"}`
 
   const handleAddToCart = () => {
@@ -316,6 +360,7 @@ function ProductCard({
       name: product.name,
       price: product.isSale && product.salePrice ? product.salePrice : product.price,
       image: imageUrl,
+      quantity: 1, // Added required quantity property
     }
 
     addToCart(cartProduct)
@@ -331,9 +376,17 @@ function ProductCard({
       className="brutalist-card transform-card group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      aria-label={`Product: ${product.name}`}
     >
       <div className="relative h-[300px]">
-        <Image src={imageUrl} alt={product.name} fill className="object-cover" />
+        <Image 
+          src={imageUrl} 
+          alt={product.name} 
+          fill 
+          className="object-cover" 
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+        
         {/* New badge */}
         {product.isNew && (
           <div className="absolute top-0 left-0">
@@ -342,31 +395,40 @@ function ProductCard({
             </div>
           </div>
         )}
+        
         {/* Sale badge */}
         {product.isSale && product.salePrice !== null && (
           <div className="absolute top-0 left-0">
             <div className="brutalist-badge bg-red-600 transform rotate-12">SALE</div>
           </div>
         )}
+        
         {/* Days since added */}
         <div className="absolute top-0 right-0 bg-black text-white px-2 py-1 text-xs font-bold transform rotate-12">
           {daysSinceAdded} {daysSinceAdded === 1 ? "DAY" : "DAYS"} AGO
         </div>
+        
         {/* Quick actions */}
         <div className="absolute bottom-0 left-0 right-0 bg-white border-t-4 border-primary p-2 flex justify-between">
           <button
             onClick={handleAddToCart}
-            className="p-2 bg-red-600 text-white border-red-600 hover:bg-green-500 flex items-center justify-center w-full"
+            className="p-2 bg-red-600 text-white border-red-600 hover:bg-green-500 flex items-center justify-center w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            aria-label={`Add ${product.name} to cart`}
           >
             <FiShoppingCart className="h-5 w-5 mr-2" />
             <span>ADD TO CART</span>
           </button>
         </div>
       </div>
+      
       <div className="p-4 border-t-4 border-primary">
-        <Link href={`/product/${product._id}`} className="hover:underline">
+        <Link 
+          href={`/product/${product._id}`} 
+          className="hover:underline focus:underline focus:outline-none"
+        >
           <h3 className="font-bold text-lg mb-1 uppercase">{product.name}</h3>
         </Link>
+        
         <div className="flex justify-between items-center">
           {product.isSale && product.salePrice !== null ? (
             <>
@@ -376,8 +438,9 @@ function ProductCard({
           ) : (
             <span className="font-bold">${product.price.toFixed(2)}</span>
           )}
+          
           <div className="flex items-center">
-            <Star className="h-4 w-4 text-yellow-500 mr-1" />
+            <Star className="h-4 w-4 text-yellow-500 mr-1" aria-hidden="true" />
             <span className="text-sm font-bold">{product.rating}</span>
             <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
           </div>
@@ -386,3 +449,21 @@ function ProductCard({
     </div>
   )
 }
+
+// Memoized Product Card for performance
+const ProductCardMemo = React.memo(ProductCard)
+
+// Product Skeleton for loading states
+const ProductSkeleton = () => (
+  <div className="brutalist-card animate-pulse">
+    <div className="relative h-[300px] bg-gray-300 rounded"></div>
+    <div className="p-4">
+      <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+      <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
+      <div className="flex justify-between">
+        <div className="h-6 bg-gray-300 rounded w-1/4"></div>
+        <div className="h-4 bg-gray-300 rounded w-1/6"></div>
+      </div>
+    </div>
+  </div>
+)

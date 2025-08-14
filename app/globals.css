@@ -133,7 +133,6 @@
   }
 }
 
-
 /* Brutalist grid lines */
 .brutalist-grid {
   background-image: linear-gradient(to right, hsl(var(--primary) / 0.3) 1px, transparent 1px),
@@ -320,6 +319,13 @@
   left: 0;
   right: 0;
   z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.brutalist-header.scrolled {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
 /* Brutalist footer */
@@ -539,12 +545,13 @@
   z-index: 100;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  padding: 30px;
+  gap: 1.25rem;
+  padding: 1.875rem;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
   transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .mega-menu.open {
@@ -556,28 +563,34 @@
 .mega-menu-column {
   display: flex;
   flex-direction: column;
+  padding: 0.5rem;
 }
 
 .mega-menu-title {
   font-family: "Anton", sans-serif;
-  font-size: 24px;
-  margin-bottom: 15px;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
   text-transform: uppercase;
   border-bottom: 4px solid hsl(var(--primary));
-  padding-bottom: 10px;
+  padding-bottom: 0.625rem;
+  color: hsl(var(--primary-dark));
 }
 
 .mega-menu-link {
   font-family: "Space Mono", monospace;
   text-transform: uppercase;
-  padding: 8px 0;
+  padding: 0.5rem 0;
   font-weight: bold;
-  transition: transform 0.2s;
+  transition: all 0.2s ease;
+  display: block;
+  color: hsl(var(--foreground));
+  text-decoration: none;
 }
 
 .mega-menu-link:hover {
-  transform: translateX(10px);
+  transform: translateX(0.625rem);
   color: hsl(var(--accent));
+  text-decoration: underline;
 }
 
 /* Uneven spacing */
@@ -675,6 +688,8 @@
     grid-template-columns: 1fr;
     overflow-y: auto;
     max-height: 80vh;
+    padding: 1.25rem;
+    gap: 1rem;
   }
 }
 
@@ -953,4 +968,355 @@
 .pattern-bg {
   background-color: hsl(var(--background));
   background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Trust Bar */
+.trust-bar {
+  background: hsl(var(--primary-dark));
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Space Mono", monospace;
+}
+
+.trust-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.trust-bar-item svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Header Content */
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+
+/* Logo Enhancement */
+.brutalist-logo-container {
+  display: flex;
+  align-items: center;
+  z-index: 20;
+}
+
+.brutalist-logo-image {
+  border: 4px solid hsl(var(--primary));
+  background: white;
+  padding: 0.25rem;
+}
+
+/* Navigation */
+.header-nav {
+  display: none;
+}
+
+.header-nav.desktop {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0 2rem;
+}
+
+.nav-link {
+  font-family: "Space Mono", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 0.5rem;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: hsl(var(--accent));
+  border-color: hsl(var(--primary));
+  transform: translateY(-2px);
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 20;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid hsl(var(--primary));
+  background: white;
+  color: hsl(var(--primary));
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.action-button:hover {
+  background: hsl(var(--primary));
+  color: white;
+  transform: translateY(-2px);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background: hsl(var(--accent));
+  color: white;
+  font-size: 0.625rem;
+  font-weight: bold;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+/* Search Bar */
+.search-container {
+  margin-top: 1rem;
+  padding-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-form {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 4px solid hsl(var(--primary));
+  font-family: "Space Mono", monospace;
+  font-size: 0.875rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: hsl(var(--accent));
+  box-shadow: 0 0 0 2px hsl(var(--accent));
+}
+
+.search-submit {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: hsl(var(--primary));
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.search-submit:hover {
+  color: hsl(var(--accent));
+}
+
+.search-tip {
+  text-align: center;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.5rem;
+  font-family: "Space Mono", monospace;
+}
+
+/* Mobile Menu Enhancements */
+.mobile-menu-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+}
+
+.mobile-trust-info {
+  background: hsl(var(--muted));
+  border: 4px solid hsl(var(--primary));
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0;
+}
+
+.mobile-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-family: "Space Mono", monospace;
+  font-size: 0.875rem;
+}
+
+.mobile-trust-item:last-child {
+  margin-bottom: 0;
+}
+
+.mobile-trust-item svg {
+  width: 1rem;
+  height: 1rem;
+  color: hsl(var(--accent));
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.mobile-nav-link {
+  font-family: "Space Mono", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 0.75rem;
+  border: 2px solid hsl(var(--primary));
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: hsl(var(--foreground));
+}
+
+.mobile-nav-link:hover {
+  background: hsl(var(--primary));
+  color: white;
+  transform: translateY(-2px);
+}
+
+.mobile-account-section {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 2px solid hsl(var(--border));
+}
+
+/* Overlay */
+.mega-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  backdrop-filter: blur(2px);
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+  .header-nav.desktop {
+    gap: 2rem;
+    margin: 0 3rem;
+  }
+  
+  .trust-bar {
+    padding: 0.25rem 1.5rem;
+    font-size: 0.8125rem;
+  }
+  
+  .search-container {
+    max-width: 600px;
+    margin: 1rem auto 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .trust-bar {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.75rem;
+  }
+  
+  .trust-bar-item {
+    gap: 0.125rem;
+  }
+  
+  .trust-bar-item svg {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+  
+  .header-content {
+    padding: 0.75rem 0;
+  }
+  
+  .action-button {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  
+  .mega-menu-column {
+    padding: 0.75rem 0;
+  }
+  
+  .mega-menu-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .search-tip {
+    font-size: 0.625rem;
+  }
+}
+
+/* Persistent Cart Indicator */
+.persistent-cart-indicator {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 90;
+  display: none;
+}
+
+.persistent-cart-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: hsl(var(--primary));
+  color: white;
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.persistent-cart-button:hover {
+  transform: scale(1.1) rotate(-5deg);
+  background: hsl(var(--accent));
+}
+
+.persistent-cart-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background: hsl(var(--accent));
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+@media (max-width: 1023px) {
+  .persistent-cart-indicator {
+    display: block;
+  }
 }

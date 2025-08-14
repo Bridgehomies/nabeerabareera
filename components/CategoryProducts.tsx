@@ -1,140 +1,134 @@
-// Path: nabeerabareera/components/category-products.tsx
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { CircleDoodle, StarDoodle } from "@/components/ui-brutalist/doodles"
-import { AnimatedButton } from "@/components/ui-brutalist/animated-button"
-import { FiShoppingCart } from "react-icons/fi"
-import { useCart } from "@/context/CartContext"
-import { toast } from "sonner"
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CircleDoodle, StarDoodle } from "@/components/ui-brutalist/doodles";
+import { AnimatedButton } from "@/components/ui-brutalist/animated-button";
+import { FiShoppingCart } from "react-icons/fi";
+import { FaStar } from 'react-icons/fa';
+import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
 
 export type Product = {
-  _id: string
-  name: string
-  price: number
-  salePrice?: number | null
-  discount?: number
-  isSale?: boolean
-  isNew?: boolean
-  category: string
-  subcategory?: string
-  description?: string
-  features?: string[]
-  image: string
-  images?: string[]
-  colors?: string[]
-  sizes?: string[]
-  inStock: boolean
-  dateAdded: string
-  isFeatured?: boolean
-  rating: number
-  reviews: number
-  tags?: string[]
-}
+  _id: string;
+  name: string;
+  price: number;
+  salePrice?: number | null;
+  discount?: number;
+  isSale?: boolean;
+  isNew?: boolean;
+  category: string;
+  subcategory?: string;
+  description?: string;
+  features?: string[];
+  image: string;
+  images?: string[];
+  colors?: string[];
+  sizes?: string[];
+  inStock: boolean;
+  dateAdded: string;
+  isFeatured?: boolean;
+  rating: number;
+  reviews: number;
+  tags?: string[];
+};
 
 export function CategoryProducts({ initialCategory }: { initialCategory?: string }) {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [activeCategory, setActiveCategory] = useState(initialCategory || "all")
-  const carouselRef = useRef<HTMLDivElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [startX, setStartX] = useState(0)
-  const [scrollLeft, setScrollLeft] = useState(0)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState(initialCategory || "all");
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
-  const { addToCart } = useCart()
+  const { addToCart } = useCart();
 
   // Fetch all products from API
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
-        if (!res.ok) throw new Error("Failed to fetch products")
-        const data = await res.json()
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${apiUrl}/api/products`);
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
 
-        // Add derived fields (isNew, isSale, discount)
         const processed = data.map((product: any) => {
-          const isNew = isProductNew(product.dateAdded)
+          const isNew = isProductNew(product.dateAdded);
           const isSale =
-            typeof product.salePrice === "number" && product.salePrice < product.price
+            typeof product.salePrice === "number" && product.salePrice < product.price;
           const discount = isSale
             ? Math.round(((product.price - product.salePrice) / product.price) * 100)
-            : undefined
+            : undefined;
 
-          return {
-            ...product,
-            isNew,
-            isSale,
-            discount,
-          }
-        })
+          return { ...product, isNew, isSale, discount };
+        });
 
-        setProducts(processed)
+        setProducts(processed);
       } catch (error) {
-        console.error("Error loading products:", error)
+        console.error("Error loading products:", error);
+        toast.error("Failed to load products");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
-  // Filter products by category
   const filteredProducts =
     activeCategory === "all"
       ? products
-      : products.filter((product) => product.category === activeCategory)
+      : products.filter((product) => product.category === activeCategory);
 
-  // Helper functions for dragging carousel
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!carouselRef.current) return
-    setIsDragging(true)
-    setStartX(e.pageX - carouselRef.current.offsetLeft)
-    setScrollLeft(carouselRef.current.scrollLeft)
-    document.body.style.cursor = "grabbing"
-  }
+    if (!carouselRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - carouselRef.current.offsetLeft);
+    setScrollLeft(carouselRef.current.scrollLeft);
+    document.body.style.cursor = "grabbing";
+  };
 
   const handleMouseUp = () => {
-    setIsDragging(false)
-    document.body.style.cursor = "default"
-  }
+    setIsDragging(false);
+    document.body.style.cursor = "default";
+  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !carouselRef.current) return
-    const x = e.pageX - carouselRef.current.offsetLeft
-    const walk = (x - startX) * 2
-    carouselRef.current.scrollLeft = scrollLeft - walk
-  }
+    if (!isDragging || !carouselRef.current) return;
+    const x = e.pageX - carouselRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    carouselRef.current.scrollLeft = scrollLeft - walk;
+  };
 
   const scroll = (direction: "left" | "right") => {
-    if (!carouselRef.current) return
-    const { scrollLeft, clientWidth } = carouselRef.current
-    const scrollTo = direction === "left"
-      ? scrollLeft - clientWidth / 2
-      : scrollLeft + clientWidth / 2
-    carouselRef.current.scrollTo({ left: scrollTo, behavior: "smooth" })
-  }
+    if (!carouselRef.current) return;
+    const { scrollLeft, clientWidth } = carouselRef.current;
+    const scrollTo =
+      direction === "left"
+        ? scrollLeft - clientWidth / 2
+        : scrollLeft + clientWidth / 2;
+    carouselRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
+  };
 
   useEffect(() => {
-    window.addEventListener("mouseup", handleMouseUp)
-    window.addEventListener("mouseleave", handleMouseUp)
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mouseleave", handleMouseUp);
     return () => {
-      window.removeEventListener("mouseup", handleMouseUp)
-      window.removeEventListener("mouseleave", handleMouseUp)
-    }
-  }, [])
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mouseleave", handleMouseUp);
+    };
+  }, []);
 
-  // Calculate if product is new (within last 14 days)
   const isProductNew = (dateString: string): boolean => {
-    const productDate = new Date(dateString)
-    const currentDate = new Date()
-    const diffTime = currentDate.getTime() - productDate.getTime()
-    const diffDays = diffTime / (1000 * 60 * 60 * 24)
-    return diffDays <= 14
-  }
+    const productDate = new Date(dateString);
+    const currentDate = new Date();
+    const diffTime = currentDate.getTime() - productDate.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays <= 14;
+  };
 
   if (loading) {
     return (
@@ -143,7 +137,7 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
           <p>Loading products...</p>
         </div>
       </section>
-    )
+    );
   }
 
   return (
@@ -152,31 +146,19 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
       <StarDoodle className="absolute bottom-10 right-10 text-primary" />
       <div className="container mx-auto px-4 md:px-6">
         {/* Category Filters */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold uppercase">Products</h2>
-          <div className="flex gap-4">
-            <CategoryButton
-              active={activeCategory === "all"}
-              onClick={() => setActiveCategory("all")}
-            >
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <h2 className="text-4xl md:text-5xl font-bold threed-text uppercase">Products</h2>
+          <div className="flex flex-wrap gap-2">
+            <CategoryButton active={activeCategory === "all"} onClick={() => setActiveCategory("all")}>
               All
             </CategoryButton>
-            <CategoryButton
-              active={activeCategory === "jewelry"}
-              onClick={() => setActiveCategory("jewelry")}
-            >
+            <CategoryButton active={activeCategory === "jewelry"} onClick={() => setActiveCategory("jewelry")}>
               Jewelry
             </CategoryButton>
-            <CategoryButton
-              active={activeCategory === "mens-coats"}
-              onClick={() => setActiveCategory("mens-coats")}
-            >
+            <CategoryButton active={activeCategory === "mens-coats"} onClick={() => setActiveCategory("mens-coats")}>
               Coats
             </CategoryButton>
-            <CategoryButton
-              active={activeCategory === "kids-clothing"}
-              onClick={() => setActiveCategory("kids-clothing")}
-            >
+            <CategoryButton active={activeCategory === "kids-clothing"} onClick={() => setActiveCategory("kids-clothing")}>
               Kids Clothing
             </CategoryButton>
           </div>
@@ -186,7 +168,7 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
         <div className="relative">
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 hover:bg-primary hover:text-white transition-all border-4 border-primary"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-3 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all border-2 border-primary"
             aria-label="Scroll left"
           >
             <ChevronLeft size={24} />
@@ -194,23 +176,22 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
 
           <div
             ref={carouselRef}
-            className="flex overflow-x-auto pb-8 hide-scrollbar drag-scroll"
+            className="flex overflow-x-auto pb-8 hide-scrollbar drag-scroll scrollbar-hide"
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseUp}
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             <div className="flex gap-6">
               {filteredProducts.slice(0, 8).map((product) => (
-                <ProductCard key={product._id} product={product} addToCart={addToCart} toast={toast} />
+                <ProductCard key={product._id} product={product} />
               ))}
             </div>
           </div>
 
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 hover:bg-primary hover:text-white transition-all border-4 border-primary"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-3 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all border-2 border-primary"
             aria-label="Scroll right"
           >
             <ChevronRight size={24} />
@@ -218,13 +199,13 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
         </div>
 
         <div className="flex justify-center mt-12">
-          <AnimatedButton href="/product" animation="bounce" size="lg">
+          <AnimatedButton href="/products" animation="bounce" size="lg">
             VIEW ALL PRODUCTS
           </AnimatedButton>
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function CategoryButton({
@@ -232,41 +213,50 @@ function CategoryButton({
   active,
   onClick,
 }: {
-  children: React.ReactNode
-  active: boolean
-  onClick: () => void
+  children: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
       className={`
-        relative px-4 py-2 text-sm font-bold uppercase transition-all
-        ${
-          active
-            ? "bg-primary text-white border-4 border-primary-dark"
-            : "bg-white text-primary border-4 border-primary hover:bg-primary hover:text-white"
+        relative px-4 py-2 text-sm font-bold uppercase transition-all rounded-full
+        ${active
+          ? "bg-primary text-white border-2 border-primary-dark"
+          : "bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white"
         }
       `}
     >
       {children}
-      {/* Decorative corner */}
-      <span
-        className={`absolute top-0 right-0 w-3 h-3 ${active ? "bg-accent" : "bg-secondary"} transform translate-x-1/2 -translate-y-1/2`}
-      ></span>
+      {active && (
+        <span className="absolute top-0 right-0 w-3 h-3 bg-accent rounded-full transform translate-x-1/2 -translate-y-1/2"></span>
+      )}
     </button>
-  )
+  );
 }
 
-function ProductCard({
-  product,
-  addToCart,
-  toast,
-}: {
-  product: Product
-  addToCart: Function
-  toast: any
-}) {
-  const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${product.image}`
+function ProductCard({ product }: { product: Product }) {
+  const { addToCart } = useCart();
+  const [imageError, setImageError] = useState(false);
+
+  const getImageUrl = (imagePath?: string): string => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    const cleanApiUrl = apiUrl.replace(/\/$/, "");
+
+    if (!imagePath) {
+      return "/placeholder.svg?height=300&width=280";
+    }
+
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+
+    const cleanImagePath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+    return `${cleanApiUrl}${cleanImagePath}`;
+  };
+
+  const imageUrl = getImageUrl(product.image || product.images?.[0]);
 
   const handleAddToCart = () => {
     const cartProduct = {
@@ -274,54 +264,105 @@ function ProductCard({
       name: product.name,
       price: product.isSale && product.salePrice ? product.salePrice : product.price,
       image: imageUrl,
+      quantity: 1,
+    };
+    addToCart(cartProduct);
+    toast.success(`${product.name} added to cart`);
+  };
+
+  // Render star ratings
+  const renderRating = () => {
+    const stars = [];
+    const fullStars = Math.floor(product.rating);
+    const hasHalfStar = product.rating % 1 >= 0.5;
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={i} className="w-4 h-4 fill-current text-yellow-400" />);
     }
-
-    addToCart(cartProduct)
-    toast.success(`${cartProduct.name} added to cart`)
-  }
-
-  function setIsHovered(arg0: boolean): void {
-    throw new Error("Function not implemented.")
-  }
+    
+    if (hasHalfStar) {
+      stars.push(
+        <FaStar 
+          key="half" 
+          className="w-4 h-4 fill-current text-yellow-400" 
+          style={{ clipPath: "polygon(0 0, 50% 0, 50% 100%, 0 100%)" }} 
+        />
+      );
+    }
+    
+    const emptyStars = 5 - Math.ceil(product.rating);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<FaStar key={`empty-${i}`} className="w-4 h-4 text-gray-300" />);
+    }
+    
+    return (
+      <div className="flex items-center">
+        <div className="flex">{stars}</div>
+        <span className="ml-1 text-xs text-gray-500">({product.reviews})</span>
+      </div>
+    );
+  };
 
   return (
-    <div
-      className="brutalist-card transform-card min-w-[280px] w-[280px]"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="brutalist-card transform-card min-w-[280px] w-[280px] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
       <div className="relative h-[300px]">
-        <Image src={imageUrl} alt={product.name} fill className="object-cover" />
-        {/* Sale badge */}
-        {product.isSale && product.salePrice !== null && (
-          <div className="brutalist-badge transform rotate-12">SALE</div>
+        {!imageError ? (
+          <Image
+            src={imageUrl}
+            alt={product.name || "Product image"}
+            fill
+            className="object-cover"
+            onError={() => setImageError(true)}
+            unoptimized={!imageUrl.startsWith("/") && !imageUrl.startsWith("http://localhost")}
+          />
+        ) : (
+          <div className="bg-gray-200 w-full h-full flex items-center justify-center">
+            <span className="text-gray-500">Image not available</span>
+          </div>
         )}
-        {/* Quick actions */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white bg-opacity-80 border-t-4 border-primary p-2 flex justify-evenly">
-          <button
-            onClick={handleAddToCart}
-            className="p-2 bg-red-600 bg-opacity-60 text-white border-red-600 hover:bg-green-500 flex items-center justify-between w-full"
-          >
-            <FiShoppingCart />
-            <span>ADD TO CART</span>
-          </button>
-        </div>
-      </div>
-      <div className="p-4 border-t-4 border-primary">
-        <Link href={`/product/${product._id}`} className="hover:underline">
-          <h3 className="font-bold text-lg mb-1 uppercase">{product.name}</h3>
-        </Link>
-        <div className="flex items-center">
-          {product.isSale && product.salePrice !== null ? (
-            <>
-              <span className="text-accent font-bold">${(product.salePrice ?? 0).toFixed(2)}</span>
-              <span className="ml-2 text-gray-500 line-through">${product.price.toFixed(2)}</span>
-            </>
-          ) : (
-            <span className="font-bold">${product.price.toFixed(2)}</span>
+        
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          {product.isNew && (
+            <div className="brutalist-badge bg-accent transform -rotate-6 px-2 py-1 text-xs font-bold">
+              NEW
+            </div>
+          )}
+          {product.isSale && product.salePrice !== null && (
+            <div className="brutalist-badge bg-red-600 transform rotate-6 px-2 py-1 text-xs font-bold">
+              -{product.discount}%
+            </div>
           )}
         </div>
+        
+        {/* Quick Add to Cart */}
+        <button
+          onClick={handleAddToCart}
+          className="absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-md hover:bg-primary hover:text-white transition-all border-2 border-primary group"
+          aria-label="Add to cart"
+        >
+          <FiShoppingCart className="h-5 w-5 group-hover:scale-110 transition-transform" />
+        </button>
+      </div>
+      
+      <div className="p-4 border-t-2 border-primary">
+        <Link href={`/product/${product._id}`} className="hover:underline">
+          <h3 className="font-bold text-lg mb-1 uppercase line-clamp-1">{product.name}</h3>
+        </Link>
+        
+        <div className="flex justify-between items-center mb-2">
+          {product.isSale && product.salePrice !== null ? (
+            <div className="flex items-baseline gap-2">
+              <span className="text-accent font-bold text-lg">${(product.salePrice ?? 0).toFixed(2)}</span>
+              <span className="text-gray-500 line-through text-sm">${product.price.toFixed(2)}</span>
+            </div>
+          ) : (
+            <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+          )}
+        </div>
+        
+        {renderRating()}
       </div>
     </div>
-  )
+  );
 }
