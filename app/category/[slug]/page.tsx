@@ -1,3 +1,5 @@
+// Path: category/[slug]/page.tsx
+
 "use client";
 import { use } from "react";
 import Image from "next/image";
@@ -8,22 +10,22 @@ import { CategoryProducts } from "@/components/CategoryProducts";
 const categories = {
   all: { 
     title: "All Products", 
-    description: "Browse our entire collection.", 
+    description: "Browse our entire collection of products.", 
     image: "/placeholder.svg?height=800&width=1200" 
   },
   jewelry: { 
     title: "Artificial Jewelry", 
-    description: "Discover our stunning collection.", 
+    description: "Discover our stunning collection of artificial jewelry.", 
     image: "/jewel.jpeg" 
   },
   "mens-coats": { 
     title: "Coats", 
-    description: "Stay stylish and warm.", 
+    description: "Stay stylish and warm with our premium Coats.", 
     image: "/coats temp.jpg" 
   },
   "kids-clothing": { 
     title: "Kids Clothing", 
-    description: "Adorable and comfortable clothing.", 
+    description: "Adorable and comfortable clothing for kids.", 
     image: "/kids temp.jpg" 
   },
 } as const;
@@ -77,7 +79,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           }}
         />
         <div className="relative z-20 container mx-auto h-full flex flex-col justify-center mt-2 px-4 md:px-6">
-          <div className="brutalist-container bg-white max-w-2xl">
+          <div className="brutalist-container bg-white max-w-2xl border-4 border-black p-6">
             <div className="flex items-center text-black text-sm mb-2 uppercase font-bold">
               <Link href="/" className="hover:text-gray-700">Home</Link>
               <ChevronRight className="h-4 w-4 mx-1" />
@@ -96,12 +98,14 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
       {/* contact */}
       <section className="py-16 bg-white flex items-center justify-center">
-        <div className="container mx-auto px-4 md:px-6 text-center brutalist-container">
+        <div className="container mx-auto px-4 md:px-6 text-center brutalist-container border-4 border-black p-8">
           <h2 className="text-3xl font-bold mb-4 uppercase">Can't find what you're looking for?</h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto uppercase">
             Our collection is constantly updating. Contact our customer service team for assistance.
           </p>
-          <button className="brutalist-btn">CONTACT US</button>
+          <button className="brutalist-btn border-4 border-black px-6 py-3 font-bold uppercase hover:bg-black hover:text-white transition-all duration-200">
+            CONTACT US
+          </button>
         </div>
       </section>
     </div>
