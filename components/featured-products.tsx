@@ -15,11 +15,12 @@ export function FeaturedProducts() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/`);
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
 
         const processed: Product[] = data.map((p: any) => {
+          const inStock = p.stock > 0;
           const isNew = new Date().getTime() - new Date(p.dateAdded).getTime() < 1000 * 60 * 60 * 24 * 14;
           const isSale = typeof p.salePrice === "number" && p.salePrice < p.price;
           const discount = isSale ? Math.round(((p.price - p.salePrice) / p.price) * 100) : undefined;
@@ -98,14 +99,14 @@ export function FeaturedProducts() {
 
         {/* Product Grid */}
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-8 overflow-x-auto hide-scrollbar">
-          {filteredProducts.map((p) => (
-            <ProductCard key={p._id} product={p} />
+          {filteredProducts.map((p, idx) => (
+            <ProductCard key={p._id || `${p.name}-${idx}`} product={p} />
           ))}
         </div>
 
         {/* CTA */}
         <div className="flex justify-center mt-12">
-          <AnimatedButton href="/product" animation="bounce" size="lg">
+          <AnimatedButton href="/products" animation="bounce" size="lg">
             VIEW ALL PRODUCTS
           </AnimatedButton>
         </div>

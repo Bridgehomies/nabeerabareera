@@ -110,12 +110,18 @@ export default function Home() {
           {/* CTAs */}
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/category/new-arrivals">
-              <button className="bg-accent hover:bg-accent/90 text-white font-semibold py-3 px-6 rounded-md transition-all">
+              <button 
+                className="bg-accent hover:bg-accent/90 text-white font-semibold py-3 px-6 rounded-md transition-all"
+                aria-label="Shop new arrivals"
+              >
                 Shop Now
               </button>
             </Link>
             <Link href="#collections">
-              <button className="border border-white text-white hover:bg-white hover:text-black font-semibold py-3 px-6 rounded-md transition-all">
+              <button 
+                className="border border-white text-white hover:bg-white hover:text-black font-semibold py-3 px-6 rounded-md transition-all"
+                aria-label="View collections"
+              >
                 View Collections
               </button>
             </Link>
@@ -241,11 +247,9 @@ export default function Home() {
               Discover the latest drops — refined, handpicked pieces.
             </p>
             <Link href="/new-arrivals">
-              
-                <AnimatedButton variant="accent" animation="pulse" className="text-sm py-2 px-4">
-                  View New Arrivals
-                </AnimatedButton>
-              
+              <AnimatedButton variant="accent" animation="pulse" className="text-sm py-2 px-4">
+                View New Arrivals
+              </AnimatedButton>
             </Link>
           </div>
         </div>
@@ -265,29 +269,27 @@ export default function Home() {
 function BrutalistCategoryCard({ title, image, link }: { title: string; image: string; link: string }) {
   return (
     <Link href={link} className="block transform-card focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`Open ${title} collection`}>
-      
-        <div className="brutalist-card overflow-hidden rounded-md shadow-sm">
-          <div className="brutalist-image relative h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
-            {/* Using unoptimized for external images — replace by adding image domain(s) to next.config.js for production */}
-            <Image
-              src={image || "/placeholder.svg"}
-              alt={title}
-              fill
-              className="object-cover transition-transform duration-300 transform hover:scale-105"
-              unoptimized
-              sizes="(max-width: 768px) 100vw, 33vw"
-            />
-          </div>
+      <div className="brutalist-card overflow-hidden rounded-md shadow-sm">
+        <div className="brutalist-image relative h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
+          {/* Using unoptimized for external images — replace by adding image domain(s) to next.config.js for production */}
+          <Image
+            src={image || "/placeholder.svg"}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-300 transform hover:scale-105"
+            unoptimized
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+        </div>
 
-          <div className="p-4 sm:p-5 md:p-6 bg-primary text-white transition-colors duration-300 hover:bg-accent">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold uppercase mb-1 sm:mb-2">{title}</h3>
-            <div className="flex items-center text-white">
-              <span className="uppercase font-bold text-xs sm:text-sm md:text-base">SHOP NOW</span>
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
-            </div>
+        <div className="p-4 sm:p-5 md:p-6 bg-primary text-white transition-colors duration-300 hover:bg-accent">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold uppercase mb-1 sm:mb-2">{title}</h3>
+          <div className="flex items-center text-white">
+            <span className="uppercase font-bold text-xs sm:text-sm md:text-base">SHOP NOW</span>
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
           </div>
         </div>
-      
+      </div>
     </Link>
   )
 }

@@ -35,9 +35,45 @@ export type Product = {
   tags?: string[];
 };
 
-export function CategoryProducts({ initialCategory }: { initialCategory?: string }) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+const categoryMap: { [key: string]: string } = {
+  "all": "all",
+  "jewelry": "jewelry",
+  "coats": "Coats",
+  "kids": "Kids"
+};
+
+const isProductNew = (dateString: string): boolean => {
+  const productDate = new Date(dateString);
+  const currentDate = new Date();
+  const diffTime = currentDate.getTime() - productDate.getTime();
+  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  return diffDays <= 14;
+};
+
+export function CategoryProducts({ initialCategory, initialProducts }: { initialCategory: string, initialProducts: any[] }) {
+  const [products, setProducts] = useState<Product[]>(() => {
+    return initialProducts.map((product: any) => {
+        const isNew = isProductNew(product.created_at);
+        const isSale = product.sale_price !== null && product.sale_price < product.price;
+        const discount = isSale
+          ? Math.round(((product.price - product.sale_price) / product.price) * 100)
+          : undefined;
+
+        return {
+            ...product,
+            _id: product._id || product.id,
+            name: product.name || product.title,
+            image: product.images?.[0] || product.image,
+            salePrice: product.sale_price,
+            isNew,
+            isSale,
+            discount,
+            inStock: product.stock > 0,
+            dateAdded: product.created_at
+        };
+    });
+  });
+
   const [activeCategory, setActiveCategory] = useState(initialCategory || "all");
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -46,42 +82,38 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
 
   const { addToCart } = useCart();
 
-  // Fetch all products from API
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/api/products`);
-        if (!res.ok) throw new Error("Failed to fetch products");
-        const data = await res.json();
+    async function fetchFilteredProducts() {
+      const filtered = initialProducts.filter(p => {
+        const dbCategory = categoryMap[activeCategory];
+        return dbCategory === "all" || p.metadata.category === dbCategory;
+      });
+      const processedFiltered = filtered.map((product: any) => {
+        const isNew = isProductNew(product.created_at);
+        const isSale = product.sale_price !== null && product.sale_price < product.price;
+        const discount = isSale
+          ? Math.round(((product.price - product.sale_price) / product.price) * 100)
+          : undefined;
 
-        const processed = data.map((product: any) => {
-          const isNew = isProductNew(product.dateAdded);
-          const isSale =
-            typeof product.salePrice === "number" && product.salePrice < product.price;
-          const discount = isSale
-            ? Math.round(((product.price - product.salePrice) / product.price) * 100)
-            : undefined;
-
-          return { ...product, isNew, isSale, discount };
-        });
-
-        setProducts(processed);
-      } catch (error) {
-        console.error("Error loading products:", error);
-        toast.error("Failed to load products");
-      } finally {
-        setLoading(false);
-      }
+        return {
+            ...product,
+            _id: product._id || product.id,
+            name: product.name || product.title,
+            image: product.images?.[0] || product.image,
+            salePrice: product.sale_price,
+            isNew,
+            isSale,
+            discount,
+            inStock: product.stock > 0,
+            dateAdded: product.created_at
+        };
+      });
+      setProducts(processedFiltered);
     }
-
-    fetchProducts();
-  }, []);
-
-  const filteredProducts =
-    activeCategory === "all"
-      ? products
-      : products.filter((product) => product.category === activeCategory);
+    if (activeCategory !== initialCategory) {
+      fetchFilteredProducts();
+    }
+  }, [activeCategory, initialCategory, initialProducts]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!carouselRef.current) return;
@@ -122,19 +154,14 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
     };
   }, []);
 
-  const isProductNew = (dateString: string): boolean => {
-    const productDate = new Date(dateString);
-    const currentDate = new Date();
-    const diffTime = currentDate.getTime() - productDate.getTime();
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 14;
-  };
-
-  if (loading) {
+  if (products.length === 0) {
     return (
       <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 md:px-6 flex justify-center items-center h-64">
-          <p>Loading products...</p>
+        <div className="container mx-auto px-4 md:px-6 flex flex-col items-center justify-center h-64">
+          <p className="text-xl text-gray-600 mb-4">No products found in this category.</p>
+          <AnimatedButton href="/products" animation="bounce" size="lg">
+            VIEW ALL PRODUCTS
+          </AnimatedButton>
         </div>
       </section>
     );
@@ -145,7 +172,6 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
       <CircleDoodle className="absolute top-10 left-10 text-accent" />
       <StarDoodle className="absolute bottom-10 right-10 text-primary" />
       <div className="container mx-auto px-4 md:px-6">
-        {/* Category Filters */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <h2 className="text-4xl md:text-5xl font-bold threed-text uppercase">Products</h2>
           <div className="flex flex-wrap gap-2">
@@ -155,16 +181,15 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
             <CategoryButton active={activeCategory === "jewelry"} onClick={() => setActiveCategory("jewelry")}>
               Jewelry
             </CategoryButton>
-            <CategoryButton active={activeCategory === "mens-coats"} onClick={() => setActiveCategory("mens-coats")}>
+            <CategoryButton active={activeCategory === "coats"} onClick={() => setActiveCategory("coats")}>
               Coats
             </CategoryButton>
-            <CategoryButton active={activeCategory === "kids-clothing"} onClick={() => setActiveCategory("kids-clothing")}>
+            <CategoryButton active={activeCategory === "kids"} onClick={() => setActiveCategory("kids")}>
               Kids Clothing
             </CategoryButton>
           </div>
         </div>
 
-        {/* Draggable Carousel */}
         <div className="relative">
           <button
             onClick={() => scroll("left")}
@@ -183,7 +208,7 @@ export function CategoryProducts({ initialCategory }: { initialCategory?: string
             onMouseLeave={handleMouseUp}
           >
             <div className="flex gap-6">
-              {filteredProducts.slice(0, 8).map((product) => (
+              {products.slice(0, 8).map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
@@ -270,35 +295,44 @@ function ProductCard({ product }: { product: Product }) {
     toast.success(`${product.name} added to cart`);
   };
 
-  // Render star ratings
   const renderRating = () => {
     const stars = [];
-    const fullStars = Math.floor(product.rating);
-    const hasHalfStar = product.rating % 1 >= 0.5;
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<FaStar key={i} className="w-4 h-4 fill-current text-yellow-400" />);
-    }
-    
-    if (hasHalfStar) {
-      stars.push(
-        <FaStar 
-          key="half" 
-          className="w-4 h-4 fill-current text-yellow-400" 
-          style={{ clipPath: "polygon(0 0, 50% 0, 50% 100%, 0 100%)" }} 
-        />
-      );
-    }
-    
-    const emptyStars = 5 - Math.ceil(product.rating);
-    for (let i = 0; i < emptyStars; i++) {
+
+    // If no reviews: show all empty stars
+    if (!product.reviews || !product.rating) {
+    for (let i = 0; i < 5; i++) {
       stars.push(<FaStar key={`empty-${i}`} className="w-4 h-4 text-gray-300" />);
     }
-    
+    return <div className="flex">{stars}</div>;
+  } else {
+      const fullStars = Math.floor(product.rating);
+      const hasHalfStar = product.rating % 1 >= 0.5;
+
+      for (let i = 0; i < fullStars; i++) {
+        stars.push(<FaStar key={i} className="w-4 h-4 fill-current text-yellow-400" />);
+      }
+      if (hasHalfStar) {
+        stars.push(
+          <FaStar
+            key="half"
+            className="w-4 h-4 fill-current text-yellow-400"
+            style={{ clipPath: "polygon(0 0, 50% 0, 50% 100%, 0 100%)" }}
+          />
+        );
+      }
+      const totalFilled = fullStars + (hasHalfStar ? 1 : 0);
+      const emptyStars = 5 - totalFilled;
+      for (let i = 0; i < emptyStars; i++) {
+        stars.push(<FaStar key={`empty-${i}`} className="w-4 h-4 text-gray-300" />);
+      }
+    }
+
     return (
       <div className="flex items-center">
         <div className="flex">{stars}</div>
-        <span className="ml-1 text-xs text-gray-500">({product.reviews})</span>
+        {product.reviews > 0 && (
+          <span className="ml-1 text-xs text-gray-500">({product.reviews})</span>
+        )}
       </div>
     );
   };
@@ -320,8 +354,7 @@ function ProductCard({ product }: { product: Product }) {
             <span className="text-gray-500">Image not available</span>
           </div>
         )}
-        
-        {/* Badges */}
+
         <div className="absolute top-3 left-3 flex gap-2">
           {product.isNew && (
             <div className="brutalist-badge bg-accent transform -rotate-6 px-2 py-1 text-xs font-bold">
@@ -334,8 +367,7 @@ function ProductCard({ product }: { product: Product }) {
             </div>
           )}
         </div>
-        
-        {/* Quick Add to Cart */}
+
         <button
           onClick={handleAddToCart}
           className="absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-md hover:bg-primary hover:text-white transition-all border-2 border-primary group"
@@ -344,23 +376,23 @@ function ProductCard({ product }: { product: Product }) {
           <FiShoppingCart className="h-5 w-5 group-hover:scale-110 transition-transform" />
         </button>
       </div>
-      
+
       <div className="p-4 border-t-2 border-primary">
         <Link href={`/product/${product._id}`} className="hover:underline">
           <h3 className="font-bold text-lg mb-1 uppercase line-clamp-1">{product.name}</h3>
         </Link>
-        
+
         <div className="flex justify-between items-center mb-2">
           {product.isSale && product.salePrice !== null ? (
             <div className="flex items-baseline gap-2">
-              <span className="text-accent font-bold text-lg">${(product.salePrice ?? 0).toFixed(2)}</span>
-              <span className="text-gray-500 line-through text-sm">${product.price.toFixed(2)}</span>
+              <span className="text-accent font-bold text-lg">PKR {(product.salePrice ?? 0).toFixed(2)}</span>
+              <span className="text-gray-500 line-through text-sm">PKR {product.price.toFixed(2)}</span>
             </div>
           ) : (
-            <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+            <span className="font-bold text-lg">PKR {product.price.toFixed(2)}</span>
           )}
         </div>
-        
+
         {renderRating()}
       </div>
     </div>

@@ -78,10 +78,10 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">Customer Service</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/contact" className="hover:text-accent">Contact Us</Link></li>
-              <li><Link href="/shipping" className="hover:text-accent">Shipping & Returns</Link></li>
+              <li><Link href="/faq/shipping" className="hover:text-accent">Shipping & Returns</Link></li>
               <li><Link href="/faq" className="hover:text-accent">FAQ</Link></li>
-              <li><Link href="/size-guide" className="hover:text-accent">Size Guide</Link></li>
-              <li><Link href="/track-order" className="hover:text-accent">Track Order</Link></li>
+              <li><Link href="/size" className="hover:text-accent">Size Guide</Link></li>
+              <li><Link href="/track" className="hover:text-accent">Track Order</Link></li>
             </ul>
           </div>
 
@@ -101,7 +101,7 @@ export function Footer() {
           <p className="text-sm font-medium">Get updates on new arrivals and offers</p>
           <div className="flex w-full md:w-auto gap-2">
             <Input type="email" placeholder="Enter your email" className="bg-white text-black" />
-            <Button variant="secondary">Subscribe</Button>
+            <Button variant="outline" className="text-black">Subscribe</Button>
           </div>
         </div>
 
