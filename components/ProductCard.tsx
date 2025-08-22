@@ -30,16 +30,40 @@ export type Product = {
 };
 
 interface ProductCardProps {
-  product: Product;
+  product: any; // Use 'any' to handle the inconsistent incoming data
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  // Map the inconsistent incoming data to the expected 'Product' type
+  const mappedProduct = {
+    _id: product.id || product._id,
+    name: product.title || product.name,
+    price: product.price,
+    salePrice: product.sale_price || product.salePrice,
+    description: product.description,
+    images: product.images,
+    category: product.metadata?.category || "N/A",
+    inStock: (product.stock !== undefined && product.stock > 0) || (product.inStock !== undefined ? product.inStock : false),
+    dateAdded: product.dateAdded, // Assuming this exists or can be defaulted
+    rating: product.metadata?.rating || 0,
+    reviews: product.metadata?.reviews || 0,
+    isSale: product.isSale || product.on_sale,
+    isNew: product.isNew,
+    isFeatured: product.isFeatured,
+    discount: product.discount,
+    colors: product.colors,
+    sizes: product.sizes,
+  };
+
   const [hoverIndex, setHoverIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { addToCart } = useCart();
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  const imageUrls = product.images?.map((img) => `${API_URL}${img}`) || ["/placeholder.svg"];
+  const imageUrls =
+    mappedProduct.images?.map((img: string) =>
+      img.startsWith("http") ? img : `${API_URL}${img}`
+    ) || ["/placeholder.svg"];
 
   // Hover image cycling
   useEffect(() => {
@@ -55,14 +79,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const handleAddToCart = () => {
     addToCart({
-      id: product._id,
-      name: product.name,
-      price: product.salePrice || product.price,
+      id: mappedProduct._id,
+      name: mappedProduct.name,
+      price: mappedProduct.salePrice || mappedProduct.price,
       image: imageUrls[0],
       quantity: 1,
-      color: product.colors?.[0] || null,
+      color: mappedProduct.colors?.[0] || null,
     });
-    toast.success(`${product.name} added to cart`);
+    toast.success(`${mappedProduct.name} added to cart`);
   };
 
   return (
@@ -72,17 +96,17 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Badges */}
       <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
-        {product.isNew && (
+        {mappedProduct.isNew && (
           <span className="bg-gold text-black px-2 py-1 text-[10px] font-semibold uppercase tracking-widest rounded-sm">
             New
           </span>
         )}
-        {product.isSale && product.discount && (
+        {mappedProduct.isSale && mappedProduct.discount && (
           <span className="bg-red-700 text-white px-2 py-1 text-[10px] font-semibold uppercase tracking-widest rounded-sm">
-            {product.discount}% Off
+            {mappedProduct.discount}% Off
           </span>
         )}
-        {product.isFeatured && (
+        {mappedProduct.isFeatured && (
           <span className="bg-amber-600 text-white px-2 py-1 text-[10px] font-semibold uppercase tracking-widest rounded-sm">
             Featured
           </span>
@@ -90,34 +114,34 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Product Image - FIXED SIZE CONTAINER */}
-      <Link href={`/product/${product._id}`} className="block">
+      <Link href={`/product/${mappedProduct._id}`} className="block">
         <div className="w-64 h-64 relative">
           <Image
             src={imageUrls[hoverIndex]}
-            alt={product.name}
+            alt={mappedProduct.name}
             fill
             sizes="256px"
             className="object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+            onError={() => setHoverIndex(0)}
           />
         </div>
       </Link>
 
       {/* Category */}
-      <p className="mt-3 text-xs text-gray-500 uppercase tracking-widest ml-4">{product.category}</p>
+      <p className="mt-3 text-xs text-gray-500 uppercase tracking-widest ml-4">{mappedProduct.category}</p>
 
       {/* Product Name */}
-      <h3 className="text-base font-serif font-bold mt-1 ml-4 line-clamp-1">{product.name}</h3>
+      <h3 className="text-base font-serif font-bold mt-1 ml-4 line-clamp-1">{mappedProduct.name}</h3>
 
       {/* Price */}
       <div className="mt-2 ml-4">
-        {product.isSale && product.salePrice ? (
+        {mappedProduct.isSale && mappedProduct.salePrice ? (
           <>
-            <span className="text-lg font-bold text-gold">${product.salePrice.toFixed(2)}</span>
-            <span className="ml-2 text-sm text-gray-400 line-through">${product.price.toFixed(2)}</span>
+            <span className="text-lg font-bold text-gold">${mappedProduct.salePrice.toFixed(2)}</span>
+            <span className="ml-2 text-sm text-gray-400 line-through">${mappedProduct.price.toFixed(2)}</span>
           </>
         ) : (
-          <span className="text-lg font-bold text-gold">${product.price.toFixed(2)}</span>
+          <span className="text-lg font-bold text-gold">${mappedProduct.price.toFixed(2)}</span>
         )}
       </div>
 
@@ -127,29 +151,30 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Star
             key={i}
             size={14}
-            className={`${i < Math.round(product.rating) ? "text-yellow-400" : "text-gray-300"} fill-current`}
+            aria-label="rating-star"
+            className={`${i < Math.round(mappedProduct.rating) ? "text-yellow-400" : "text-gray-300"} fill-current`}
           />
         ))}
-        <span className="ml-2 text-xs text-gray-500">({product.reviews})</span>
+        <span className="ml-2 text-xs text-gray-500">({mappedProduct.reviews})</span>
       </div>
 
       {/* Stock */}
       <p
         className={`mt-2 ml-4 text-xs font-medium ${
-          product.inStock ? "text-emerald-600" : "text-rose-600"
+          mappedProduct.inStock ? "text-emerald-600" : "text-rose-600"
         }`}
       >
-        {product.inStock ? "In Stock" : "Out of Stock"}
+        {mappedProduct.inStock ? "In Stock" : "Out of Stock"}
       </p>
 
       {/* Add to Cart Button */}
       <button
         onClick={handleAddToCart}
-        disabled={!product.inStock}
-        aria-label={`Add ${product.name} to cart`}
-        className={`mt-4 w-[calc(100%-2rem)] mx-auto mb-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
-          product.inStock
-            ? "bg-black text-white hover:bg-gold hover:text-black"
+        disabled={!mappedProduct.inStock}
+        aria-label={`Add ${mappedProduct.name} to cart`}
+        className={`mt-4 w-[calc(100%-2rem)] mx-auto mb-4 py-2 items-center flex pl-4 text-sm font-medium rounded-lg transition-all duration-300 ${
+          mappedProduct.inStock
+            ? "bg-red-500 text-white hover:bg-gold hover:text-white hover:bg-black/90"
             : "bg-gray-200 text-gray-500 cursor-not-allowed"
         }`}
       >

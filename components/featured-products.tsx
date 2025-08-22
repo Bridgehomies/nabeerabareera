@@ -15,15 +15,16 @@ export function FeaturedProducts() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/`);
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
 
         const processed: Product[] = data.map((p: any) => {
+          const inStock = p.stock > 0;
           const isNew = new Date().getTime() - new Date(p.dateAdded).getTime() < 1000 * 60 * 60 * 24 * 14;
           const isSale = typeof p.salePrice === "number" && p.salePrice < p.price;
           const discount = isSale ? Math.round(((p.price - p.salePrice) / p.price) * 100) : undefined;
-          return { ...p, isNew, isSale, discount };
+          return { ...p, isNew, isSale, discount, inStock };
         });
 
         // Sort by most reviewed
@@ -98,8 +99,8 @@ export function FeaturedProducts() {
 
         {/* Product Grid */}
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-8 overflow-x-auto hide-scrollbar">
-          {filteredProducts.map((p) => (
-            <ProductCard key={p._id} product={p} />
+          {filteredProducts.map((p, idx) => (
+            <ProductCard key={p._id || `${p.name}-${idx}`} product={p} />
           ))}
         </div>
 

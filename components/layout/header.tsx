@@ -324,7 +324,7 @@ export function Header() {
               <CircleDoodle className="absolute -top-5 -right-5 text-accent" />
               <h3 className="text-2xl font-bold mb-4">NEW IN</h3>
               <p className="mb-4 uppercase text-center text-sm">Discover our latest jewelry arrivals</p>
-              <AnimatedButton href="/category/jewelry/new" animation="bounce">
+              <AnimatedButton href="/category/jewelry/" animation="bounce">
                 SHOP NOW
               </AnimatedButton>
             </div>
@@ -378,7 +378,7 @@ export function Header() {
               <CircleDoodle className="absolute -bottom-5 -left-5 text-accent" />
               <h3 className="text-2xl font-bold mb-4">WINTER SALE</h3>
               <p className="mb-4 uppercase text-center text-sm">Up to 50% off selected coats</p>
-              <AnimatedButton href="/category/mens-coats/sale" animation="shake">
+              <AnimatedButton href="/category/mens-coats/" animation="shake">
                 SHOP SALE
               </AnimatedButton>
             </div>
@@ -438,7 +438,7 @@ export function Header() {
               <CircleDoodle className="absolute -top-5 -left-5 text-accent" />
               <h3 className="text-2xl font-bold mb-4">NEW ARRIVALS</h3>
               <p className="mb-4 uppercase text-center text-sm">Check out our latest kids collection</p>
-              <AnimatedButton href="/category/kids-clothing/new" animation="pulse">
+              <AnimatedButton href="/new-arrivals" animation="pulse">
                 EXPLORE NOW
               </AnimatedButton>
             </div>
