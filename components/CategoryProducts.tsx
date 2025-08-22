@@ -86,7 +86,7 @@ export function CategoryProducts({ initialCategory, initialProducts }: { initial
     async function fetchFilteredProducts() {
       const filtered = initialProducts.filter(p => {
         const dbCategory = categoryMap[activeCategory];
-        return dbCategory === "all" || p.metadata.category === dbCategory;
+        return dbCategory === "all" || p.category === dbCategory;
       });
       const processedFiltered = filtered.map((product: any) => {
         const isNew = isProductNew(product.created_at);
@@ -105,7 +105,9 @@ export function CategoryProducts({ initialCategory, initialProducts }: { initial
             isSale,
             discount,
             inStock: product.stock > 0,
-            dateAdded: product.created_at
+            dateAdded: product.created_at,
+            reviews: product.reviews || 0,
+            rating: product.rating || 0,
         };
       });
       setProducts(processedFiltered);

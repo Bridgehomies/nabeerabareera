@@ -114,21 +114,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   const { addToCart } = useCart();
 
-  const fetchReviews = async () => {
-    try {
-      setReviewsLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/product/${resolvedParams.id}`);
-      if (res.ok) {
-        const reviewsData = await res.json();
-        setReviews(reviewsData);
-      }
-    } catch (err) {
-      console.error("Error fetching reviews:", err);
-    } finally {
-      setReviewsLoading(false);
-    }
-  };
-
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -163,18 +148,27 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         setIsReviewDialogOpen(false);
         setReviewForm({ author: "", rating: 5, comment: "" });
         
-        // Refresh reviews
-        await fetchReviews();
+        // Refresh both reviews and product data
+        const [reviewsRes, productRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/product/${resolvedParams.id}`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${resolvedParams.id}`)
+        ]);
         
-        // Update product rating (you might want to refetch product data or calculate this)
-        if (product) {
-          const newReviewCount = reviews.length + 1;
-          const newAverageRating = ((product.rating * reviews.length) + reviewForm.rating) / newReviewCount;
-          setProduct({
-            ...product,
-            rating: newAverageRating,
-            reviews: newReviewCount
-          });
+        if (reviewsRes.ok) {
+          const updatedReviews = await reviewsRes.json();
+          setReviews(updatedReviews);
+          
+          // Update product with new rating and review count
+          if (product && updatedReviews.length > 0) {
+            const totalRating = updatedReviews.reduce((sum: number, review: Review) => sum + review.rating, 0);
+            const newAverageRating = totalRating / updatedReviews.length;
+            
+            setProduct({
+              ...product,
+              rating: newAverageRating,
+              reviews: updatedReviews.length
+            });
+          }
         }
       } else {
         const errorData = await response.json();
@@ -243,7 +237,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   };
 
   useEffect(() => {
-    async function fetchProduct() {
+    async function fetchProductAndReviews() {
       try {
         setLoading(true);
         setError(null);
@@ -252,12 +246,34 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           throw new Error("API configuration error");
         }
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${resolvedParams.id}`);
-        if (!res.ok) {
-          throw new Error(`Product not found: ${res.status}`);
+        // Fetch product and reviews in parallel
+        const [productRes, reviewsRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${resolvedParams.id}`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/product/${resolvedParams.id}`)
+        ]);
+
+        if (!productRes.ok) {
+          throw new Error(`Product not found: ${productRes.status}`);
         }
         
-        const apiData: ProductApiResponse = await res.json();
+        const apiData: ProductApiResponse = await productRes.json();
+        
+        // Get reviews data
+        let reviewsData: Review[] = [];
+        if (reviewsRes.ok) {
+          reviewsData = await reviewsRes.json();
+          setReviews(reviewsData);
+        }
+
+        // Calculate actual rating from reviews if we have them, otherwise use backend data
+        let actualRating = apiData.metadata?.rating || 0;
+        let actualReviewCount = apiData.metadata?.reviews || 0;
+
+        if (reviewsData.length > 0) {
+          const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
+          actualRating = totalRating / reviewsData.length;
+          actualReviewCount = reviewsData.length;
+        }
 
         const transformedProduct: Product = {
           _id: apiData.id,
@@ -268,8 +284,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           images: apiData.images || [],
           category: apiData.metadata?.category || "uncategorized",
           colors: [],
-          rating: apiData.metadata?.rating || 0,
-          reviews: apiData.metadata?.reviews || 0,
+          rating: actualRating,
+          reviews: actualReviewCount,
           inStock: apiData.inStock !== undefined 
             ? apiData.inStock 
             : apiData.stock > 0,
@@ -281,9 +297,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         if (transformedProduct.colors && transformedProduct.colors.length > 0) {
           setSelectedColor(transformedProduct.colors[0]);
         }
-
-        // Fetch reviews after product is loaded
-        await fetchReviews();
         
       } catch (err) {
         console.error("Error fetching product:", err);
@@ -294,7 +307,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       }
     }
 
-    fetchProduct();
+    fetchProductAndReviews();
   }, [resolvedParams.id]);
 
   if (loading) {
@@ -366,7 +379,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         {/* Product Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Images */}
-          <div className="space-y-4 mt-5">
+          <div className="space-y-4">
             <div className="brutalist-image relative h-[400px] md:h-[500px]">
               {product.images?.length > 0 ? (
                 <Image
@@ -393,13 +406,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {product.images?.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {product.images.map((img, index) => (
-                  <button
+                  <Button
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={`relative h-20 overflow-hidden border-4 ${
                       selectedImage === index ? "border-black" : "border-gray-300"
                     } hover:border-black transition-colors`}
-                    aria-label={`View image ${index + 1} of ${product.name}`}
                   >
                     <Image
                       src={getImageUrl(img)}
@@ -410,7 +422,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         e.currentTarget.src = "/placeholder.svg";
                       }}
                     />
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}
@@ -440,7 +452,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className="mt-2 flex items-center">
                 {renderStars(product.rating)}
                 <span className="ml-2 text-sm text-gray-500 uppercase">
-                  {product.rating > 0 ? product.rating.toFixed(1) : "No rating"} ({reviews.length} reviews)
+                  {product.rating > 0 ? product.rating.toFixed(1) : "No rating"} ({product.reviews} reviews)
                 </span>
               </div>
 
@@ -468,7 +480,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                           ? "bg-black text-white border-4 border-black"
                           : "border-4 border-black hover:bg-gray-100"
                       }`}
-                      aria-label={`Select color ${color}`}
                     >
                       {color}
                     </button>
@@ -507,7 +518,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 className={`brutalist-btn flex items-center justify-center ${
                   !product.inStock ? "opacity-50 cursor-not-allowed" : ""
                 }`}
-                aria-label={product.inStock ? `Add ${product.name} to cart` : "Product is out of stock"}
               >
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 {product.inStock ? "ADD TO CART" : "OUT OF STOCK"}
@@ -543,12 +553,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="flex items-center pt-2">
               <span className="text-sm text-gray-500 mr-2">Share:</span>
               <div className="flex space-x-2">
-                <button 
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  aria-label="Share product"
-                >
+                <Button className="p-1 rounded-full hover:bg-gray-100 transition-colors">
                   <Share2 size={16} />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -560,7 +567,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({reviews.length})</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
             </TabsList>
             <TabsContent value="details" className="p-4 border rounded-b-md mt-1">
               <div className="prose max-w-none">
@@ -595,7 +602,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         {product.rating > 0 ? product.rating.toFixed(1) : "0.0"}
                       </span>
                       <p className="text-sm text-gray-500">
-                        Based on {reviews.length} review{reviews.length !== 1 ? 's' : ''}
+                        Based on {product.reviews} review{product.reviews !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
@@ -633,7 +640,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                                 type="button"
                                 onClick={() => setReviewForm({...reviewForm, rating: star})}
                                 className="focus:outline-none"
-                                aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
                               >
                                 <Star
                                   className={`h-6 w-6 ${

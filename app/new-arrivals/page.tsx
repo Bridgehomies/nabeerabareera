@@ -29,6 +29,7 @@ export type Product = {
 type ProductApiResponse = {
   id: string;
   name: string;
+  title?: string;
   price: number;
   sale_price: number | null;
   category: string;
@@ -66,46 +67,52 @@ export default function NewArrivalsPage() {
   const { addToCart } = useCart();
 
   // ---- Fetch Products ----
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // ---- Fetch Products ----
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        if (!apiUrl) throw new Error("API URL not configured");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("API URL not configured");
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        const res = await fetch(`${apiUrl}/products/`, {
-          signal: controller.signal,
-          headers: { "Content-Type": "application/json" },
-        });
+      const res = await fetch(`${apiUrl}/products/`, {
+        signal: controller.signal,
+        headers: { "Content-Type": "application/json" },
+      });
 
-        clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-        if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+      if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
 
-        const data: ProductApiResponse[] = await res.json();
-        const transformedData: Product[] = data.map((p) => {
+      const data: ProductApiResponse[] = await res.json();
+      const now = Date.now();
+      const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+
+      const transformedData: Product[] = data.map((p) => {
           const primaryImage = p.images?.[0] || "/placeholder.svg";
+          const createdAt = new Date(p.created_at).getTime();
           const isNew =
             p.metadata?.isNew ||
             (Date.now() - new Date(p.created_at).getTime()) / (1000 * 3600 * 24) <= 90;
 
           return {
+            ...p,
             _id: p.id,
-            name: p.name,
+            name: p.name || p.title || "Unnamed Product", // ✅ fallback for missing names
             price: p.price,
             salePrice: p.sale_price,
             category: p.metadata?.category || p.category || "uncategorized",
             subcategory: p.metadata?.subcategories?.[0],
             image: primaryImage,
-            inStock: p.inStock,
+            inStock: typeof p.inStock !== "undefined" ? p.inStock : p.stock > 0, // ✅ fallback
             dateAdded: p.created_at,
-            rating: p.metadata?.rating || 0,
-            reviews: p.metadata?.reviews || 0,
+            rating: p.metadata?.rating ?? 0,
+            reviews: p.metadata?.reviews ?? 0,
             isNew,
             isSale: p.metadata?.isSale || (p.sale_price !== null && p.sale_price < p.price),
             discount:
@@ -113,19 +120,22 @@ export default function NewArrivalsPage() {
                 ? Math.round(((p.price - p.sale_price) / p.price) * 100)
                 : undefined,
           };
-        });
+        })
+        // 🔹 Keep only products added in the last 30 days
+        .filter((p) => p.isNew);
 
-        setProducts(transformedData);
-      } catch (err: any) {
-        setError(err.message || "Failed to load products");
-        toast.error("Couldn't fetch products. Try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setProducts(transformedData);
+    } catch (err: any) {
+      setError(err.message || "Failed to load products");
+      toast.error("Couldn't fetch products. Try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchProducts();
-  }, []);
+  fetchProducts();
+}, []);
+
 
   // ---- Memoized Categories ----
   const availableCategories = useMemo(
@@ -354,7 +364,10 @@ const ProductCard = ({
       </div>
 
       <div className="p-4 border-t-4 border-primary">
-        <Link href={`/product/${product._id}`} className="hover:underline">
+        <Link
+          href={`/product/${product._id}`}
+          className="hover:underline relative z-10" // ✅ ensure it's above Image layer
+        >
           <h3 className="font-bold text-lg mb-1 uppercase">{product.name}</h3>
         </Link>
         <div className="flex justify-between items-center">
