@@ -236,6 +236,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     });
   };
 
+  const decreaseQuantity = () => {
+    if (quantity > 1) setQuantity(quantity - 1);
+  };
+
+  const increaseQuantity = () => {
+    setQuantity(quantity + 1);
+  };
+
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return "/placeholder.svg";
+    return imagePath.startsWith('http') 
+      ? imagePath 
+      : `${process.env.NEXT_PUBLIC_API_URL}${imagePath}`;
+  };
+
   useEffect(() => {
     async function fetchProductAndReviews() {
       try {
@@ -338,21 +353,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       </div>
     );
   }
-
-  const decreaseQuantity = () => {
-    if (quantity > 1) setQuantity(quantity - 1);
-  };
-
-  const increaseQuantity = () => {
-    setQuantity(quantity + 1);
-  };
-
-  const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return "/placeholder.svg";
-    return imagePath.startsWith('http') 
-      ? imagePath 
-      : `${process.env.NEXT_PUBLIC_API_URL}${imagePath}`;
-  };
 
   const currentPrice = product.isSale && product.salePrice ? product.salePrice : product.price;
   const originalPrice = product.isSale && product.salePrice ? product.price : null;

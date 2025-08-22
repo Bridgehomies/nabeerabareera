@@ -57,7 +57,6 @@ export function Footer() {
               <Link href="https://www.instagram.com/nabeera_bareera/" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="p-2 border border-white hover:bg-white hover:text-primary">
                 <Instagram size={18} />
               </Link>
-              
             </div>
           </div>
 

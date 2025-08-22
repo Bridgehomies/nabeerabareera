@@ -96,6 +96,7 @@ export default function CartPage() {
                               <button
                                 onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                                 className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
+                                disabled={item.quantity <= 1}
                               >
                                 <Minus size={16} />
                               </button>
@@ -148,7 +149,7 @@ export default function CartPage() {
 
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 sticky top-24">
-                <h2 className="text-2xl  font-medium mb-6">Order Summary</h2>
+                <h2 className="text-2xl font-medium mb-6">Order Summary</h2>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">

@@ -174,6 +174,7 @@ export function CategoryProducts({ initialCategory, initialProducts }: { initial
       <CircleDoodle className="absolute top-10 left-10 text-accent" />
       <StarDoodle className="absolute bottom-10 right-10 text-primary" />
       <div className="container mx-auto px-4 md:px-6">
+        {/* Category Filters */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <h2 className="text-4xl md:text-5xl font-bold threed-text uppercase">Products</h2>
           <div className="flex flex-wrap gap-2">
@@ -192,6 +193,7 @@ export function CategoryProducts({ initialCategory, initialProducts }: { initial
           </div>
         </div>
 
+        {/* Draggable Carousel */}
         <div className="relative">
           <button
             onClick={() => scroll("left")}
@@ -356,7 +358,8 @@ function ProductCard({ product }: { product: Product }) {
             <span className="text-gray-500">Image not available</span>
           </div>
         )}
-
+        
+        {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
           {product.isNew && (
             <div className="brutalist-badge bg-accent transform -rotate-6 px-2 py-1 text-xs font-bold">
@@ -369,7 +372,8 @@ function ProductCard({ product }: { product: Product }) {
             </div>
           )}
         </div>
-
+        
+        {/* Quick Add to Cart */}
         <button
           onClick={handleAddToCart}
           className="absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-md hover:bg-primary hover:text-white transition-all border-2 border-primary group"
@@ -378,12 +382,12 @@ function ProductCard({ product }: { product: Product }) {
           <FiShoppingCart className="h-5 w-5 group-hover:scale-110 transition-transform" />
         </button>
       </div>
-
+      
       <div className="p-4 border-t-2 border-primary">
         <Link href={`/product/${product._id}`} className="hover:underline">
           <h3 className="font-bold text-lg mb-1 uppercase line-clamp-1">{product.name}</h3>
         </Link>
-
+        
         <div className="flex justify-between items-center mb-2">
           {product.isSale && product.salePrice !== null ? (
             <div className="flex items-baseline gap-2">
@@ -394,7 +398,7 @@ function ProductCard({ product }: { product: Product }) {
             <span className="font-bold text-lg">PKR {product.price.toFixed(2)}</span>
           )}
         </div>
-
+        
         {renderRating()}
       </div>
     </div>

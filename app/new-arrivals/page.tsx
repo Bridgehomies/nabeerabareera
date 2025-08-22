@@ -67,74 +67,73 @@ export default function NewArrivalsPage() {
   const { addToCart } = useCart();
 
   // ---- Fetch Products ----
-  // ---- Fetch Products ----
-useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) throw new Error("API URL not configured");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiUrl) throw new Error("API URL not configured");
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const res = await fetch(`${apiUrl}/products/`, {
-        signal: controller.signal,
-        headers: { "Content-Type": "application/json" },
-      });
+        const res = await fetch(`${apiUrl}/products/`, {
+          signal: controller.signal,
+          headers: { "Content-Type": "application/json" },
+        });
 
-      clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+        if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
 
-      const data: ProductApiResponse[] = await res.json();
-      const now = Date.now();
-      const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+        const data: ProductApiResponse[] = await res.json();
+        const now = Date.now();
+        const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
 
-      const transformedData: Product[] = data.map((p) => {
-          const primaryImage = p.images?.[0] || "/placeholder.svg";
-          const createdAt = new Date(p.created_at).getTime();
-          const isNew =
-            p.metadata?.isNew ||
-            (Date.now() - new Date(p.created_at).getTime()) / (1000 * 3600 * 24) <= 90;
+        const transformedData: Product[] = data.map((p) => {
+            const primaryImage = p.images?.[0] || "/placeholder.svg";
+            const createdAt = new Date(p.created_at).getTime();
+            const isNew =
+              p.metadata?.isNew ||
+              (Date.now() - new Date(p.created_at).getTime()) / (1000 * 3600 * 24) <= 90;
 
-          return {
-            ...p,
-            _id: p.id,
-            name: p.name || p.title || "Unnamed Product", // ✅ fallback for missing names
-            price: p.price,
-            salePrice: p.sale_price,
-            category: p.metadata?.category || p.category || "uncategorized",
-            subcategory: p.metadata?.subcategories?.[0],
-            image: primaryImage,
-            inStock: typeof p.inStock !== "undefined" ? p.inStock : p.stock > 0, // ✅ fallback
-            dateAdded: p.created_at,
-            rating: p.metadata?.rating ?? 0,
-            reviews: p.metadata?.reviews ?? 0,
-            isNew,
-            isSale: p.metadata?.isSale || (p.sale_price !== null && p.sale_price < p.price),
-            discount:
-              p.sale_price !== null && p.sale_price < p.price
-                ? Math.round(((p.price - p.sale_price) / p.price) * 100)
-                : undefined,
-          };
-        })
-        // 🔹 Keep only products added in the last 30 days
-        .filter((p) => p.isNew);
+            return {
+              ...p,
+              _id: p.id,
+              name: p.name || p.title || "Unnamed Product", // ✅ fallback for missing names
+              price: p.price,
+              salePrice: p.sale_price,
+              category: p.metadata?.category || p.category || "uncategorized",
+              subcategory: p.metadata?.subcategories?.[0],
+              image: primaryImage,
+              inStock: typeof p.inStock !== "undefined" ? p.inStock : p.stock > 0, // ✅ fallback
+              dateAdded: p.created_at,
+              rating: p.metadata?.rating ?? 0,
+              reviews: p.metadata?.reviews ?? 0,
+              isNew,
+              isSale: p.metadata?.isSale || (p.sale_price !== null && p.sale_price < p.price),
+              discount:
+                p.sale_price !== null && p.sale_price < p.price
+                  ? Math.round(((p.price - p.sale_price) / p.price) * 100)
+                  : undefined,
+            };
+          })
+          // 🔹 Keep only products added in the last 30 days
+          .filter((p) => p.isNew);
 
-      setProducts(transformedData);
-    } catch (err: any) {
-      setError(err.message || "Failed to load products");
-      toast.error("Couldn't fetch products. Try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+        setProducts(transformedData);
+      } catch (err: any) {
+        setError(err.message || "Failed to load products");
+        toast.error("Couldn't fetch products. Try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchProducts();
-}, []);
+    fetchProducts();
+  }, []);
 
 
   // ---- Memoized Categories ----
@@ -234,6 +233,16 @@ useEffect(() => {
       <div className="container mx-auto px-4 py-12 relative z-10">
         {/* Filter + Sort Controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div className="mb-4 md:mb-0">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              aria-expanded={isFilterOpen}
+              aria-controls="filter-panel"
+              className="flex items-center font-bold uppercase mb-4 md:mb-0 transform hover:rotate-2 transition-transform focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <Filter className="mr-2 h-5 w-5" /> Filter & Sort
+            </button>
+          </div>
           
           <div className="flex flex-wrap gap-2">
             <span className="text-sm font-bold uppercase mt-2 mr-2">Sort By:</span>
@@ -248,6 +257,39 @@ useEffect(() => {
             ))}
           </div>
         </div>
+
+        {/* Expanded Filter Panel */}
+        {isFilterOpen && (
+          <div id="filter-panel" className="brutalist-container mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold uppercase">Filter By Category</h3>
+              <button 
+                onClick={() => setIsFilterOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+                aria-label="Close filter panel"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <CategoryButton 
+                active={activeCategory === "all"} 
+                onClick={() => setActiveCategory("all")}
+              >
+                All New Arrivals
+              </CategoryButton>
+              {availableCategories.map((category) => (
+                <CategoryButton
+                  key={category}
+                  active={activeCategory === category}
+                  onClick={() => setActiveCategory(category)}
+                >
+                  {category}
+                </CategoryButton>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -288,6 +330,20 @@ const SortButton = ({ children, active, onClick }: any) => (
     }`}
   >
     <ArrowUpDown className={`inline-block mr-1 h-3 w-3`} />
+    {children}
+  </button>
+);
+
+// ---- Category Button ----
+const CategoryButton = ({ children, active, onClick }: any) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 text-sm font-bold uppercase transition-all border-4 ${
+      active
+        ? "bg-primary text-white border-primary-dark"
+        : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
+    }`}
+  >
     {children}
   </button>
 );
@@ -362,7 +418,7 @@ const ProductCard = ({
           </div>
         )}
       </div>
-
+      
       <div className="p-4 border-t-4 border-primary">
         <Link
           href={`/product/${product._id}`}
@@ -370,6 +426,7 @@ const ProductCard = ({
         >
           <h3 className="font-bold text-lg mb-1 uppercase">{product.name}</h3>
         </Link>
+        
         <div className="flex justify-between items-center">
           {product.isSale && product.salePrice ? (
             <>
@@ -385,7 +442,7 @@ const ProductCard = ({
           )}
 
           <div className="flex items-center">
-            <Star className="h-4 w-4 text-yellow-500 mr-1" />
+            <Star className="h-4 w-4 text-yellow-500 mr-1" aria-hidden="true" />
             <span className="text-sm font-bold">{product.rating}</span>
             <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
           </div>
@@ -401,4 +458,5 @@ const ProductCard = ({
     </div>
   );
 };
+
 const ProductCardMemo = React.memo(ProductCard);

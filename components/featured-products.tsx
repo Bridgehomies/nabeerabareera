@@ -24,7 +24,7 @@ export function FeaturedProducts() {
           const isNew = new Date().getTime() - new Date(p.dateAdded).getTime() < 1000 * 60 * 60 * 24 * 14;
           const isSale = typeof p.salePrice === "number" && p.salePrice < p.price;
           const discount = isSale ? Math.round(((p.price - p.salePrice) / p.price) * 100) : undefined;
-          return { ...p, isNew, isSale, discount };
+          return { ...p, isNew, isSale, discount, inStock };
         });
 
         // Sort by most reviewed
@@ -106,7 +106,7 @@ export function FeaturedProducts() {
 
         {/* CTA */}
         <div className="flex justify-center mt-12">
-          <AnimatedButton href="/products" animation="bounce" size="lg">
+          <AnimatedButton href="/product" animation="bounce" size="lg">
             VIEW ALL PRODUCTS
           </AnimatedButton>
         </div>

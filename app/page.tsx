@@ -104,7 +104,7 @@ export default function Home() {
 
           {/* Subheading */}
           <p className="text-gray-200 text-base sm:text-lg max-w-xl">
-            Handpicked jewelry, cozy winter coats, and playful kids’ collections — all crafted to make you shine.
+            Handpicked jewelry, cozy winter coats, and playful kids' collections — all crafted to make you shine.
           </p>
 
           {/* CTAs */}
