@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import qs from "query-string";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
 
 export function ProductsFilter({ productsLength, limit }: { productsLength: number; limit: number }) {
   const searchParams = useSearchParams();

@@ -9,7 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 // Dynamic — kept intact
 export default function OrdersTable() {
-  const [orders, setOrders] = useState([])
+  interface Order {
+    id: string;
+    customerName: string;
+    status: "pending" | "shipped" | "delivered" | "cancelled";
+    total: number;
+    date: string;
+  }
+
+  const [orders, setOrders] = useState<Order[]>([])
   const [statusFilter, setStatusFilter] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -26,7 +34,7 @@ export default function OrdersTable() {
     const matchesStatus = statusFilter ? order.status === statusFilter : true
     const matchesSearch = searchTerm
       ? order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.id.toLowerCase().includes(searchTerm.toLowerCase())
+      order.id.toLowerCase().includes(searchTerm.toLowerCase())
       : true
     return matchesStatus && matchesSearch
   })

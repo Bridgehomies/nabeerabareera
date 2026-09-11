@@ -2,6 +2,9 @@
 import ProductCard from "@/components/ProductCard";
 import { ProductsFilter } from "@/components/ProductsFilter";
 import qs from "query-string";
+import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 
 interface SearchParams {
   category?: string;
@@ -62,7 +65,9 @@ export default async function ProductsPage(props: { searchParams?: SearchParams 
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-10">
-      <ProductsFilter productsLength={products.length} limit={limit} />
+      <Suspense fallback={null}>
+        <ProductsFilter productsLength={products.length} limit={limit} />
+      </Suspense>
       {products.length === 0 ? (
         <div className="py-20 text-center text-gray-500">No products found.</div>
       ) : (

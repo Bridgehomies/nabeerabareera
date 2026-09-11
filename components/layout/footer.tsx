@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
+import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import { CircleDoodle, StarDoodle, ZigzagDoodle } from "@/components/ui-brutalist/doodles";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,10 +53,10 @@ export function Footer() {
             </p>
             <div className="flex space-x-3">
               <Link href="https://www.facebook.com/share/1CN5FMW4mQ/" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="p-2 border border-white hover:bg-white hover:text-primary">
-                <Facebook size={18} />
+                <FaFacebook size={18} />
               </Link>
               <Link href="https://www.instagram.com/nabeera_bareera/" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="p-2 border border-white hover:bg-white hover:text-primary">
-                <Instagram size={18} />
+                <FaInstagram size={18} />
               </Link>
             </div>
           </div>
